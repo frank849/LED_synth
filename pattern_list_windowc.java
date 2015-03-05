@@ -6,6 +6,7 @@ import javax.swing.event.*;
 import javax.swing.*;   
 import javax.swing.table.*;
       
+import java.text.*;
 import java.awt.*;
 import java.awt.event.*;                       
 //import java.awt.datatransfer.*;
@@ -262,6 +263,7 @@ class pattern_list_column_modelc extends DefaultTableColumnModel {
 class pattern_list_table_modelc extends  AbstractTableModel {
   static boolean new_patterns = true;
   static boolean new_tunnings = true;
+  static DecimalFormat formatter = new DecimalFormat("#.####");
 
   public String getColumnName(int column) {
     return pattern_list_column_modelc.getColumnName(column);
@@ -279,7 +281,8 @@ class pattern_list_table_modelc extends  AbstractTableModel {
     if (col == 1) {return new Integer(e.mode);}
     if (col == 2) {
       float key = (float) scalec.cents_to_key(e.cents);
-      return new Float(key);
+      String s = formatter.format(key);
+      return s;
     }
     if (col == 3) {return e.tuning;}
     return null;
