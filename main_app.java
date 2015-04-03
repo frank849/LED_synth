@@ -119,11 +119,15 @@ public class main_app implements Runnable,ActionListener {
       for (int i = 0;i < n;i++) {
         String pname = (String) pnames[rand.nextInt(psize)];
         String tname = (String) tnames[rand.nextInt(tsize)];
-        int k = rand.nextInt(notes_per_octave); 
-        k = k - (notes_per_octave >> 1);
-        int c = (-k * os) / notes_per_octave;
-        c = c + rand.nextInt(1200)-600;
-        song_list.add(new song_list_entryc(pname,k,c,tname));
+        int m = rand.nextInt(notes_per_octave); 
+        m = m - (notes_per_octave >> 1);
+        int k = (-m * os) / notes_per_octave;
+        //k = k + rand.nextInt(1200)-600;
+        int ed = scalec.equal_divisions;
+        int d = rand.nextInt(ed) - (ed >> 1);
+        //d = d - (notes_per_octave >> 1);
+        k  = k + scalec.key_to_cents(d);
+        song_list.add(new song_list_entryc(pname,m,k,tname));
       }
     } catch (java.lang.NumberFormatException e) {
       JOptionPane.showMessageDialog(main_frame,
