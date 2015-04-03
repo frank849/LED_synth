@@ -348,11 +348,11 @@ public class pattern_list_windowc extends JFrame implements ActionListener,ListS
   JPanel button_panel;
   JScrollPane listboxscroller;
   //DefaultListModel list;
+  JLabel mode_spinner_label;
+  JSpinner mode_spinner;  
   JLabel key_spinner_label;
   JSpinner key_spinner;  
-  JLabel cents_spinner_label;
-  JSpinner cents_spinner;  
-  SpinnerNumberModel cents_spinner_model;
+  SpinnerNumberModel key_spinner_model;
   JButton button1;
   JButton button2;
   JButton button3;
@@ -388,20 +388,20 @@ public class pattern_list_windowc extends JFrame implements ActionListener,ListS
     
     button_panel.setLayout(new GridLayout(4,2));
     
-    key_spinner_label = new JLabel("mode:");
-    key_spinner = new JSpinner(new SpinnerNumberModel(0, -128, 127, 1));
+    mode_spinner_label = new JLabel("mode:");
+    mode_spinner = new JSpinner(new SpinnerNumberModel(0, -128, 127, 1));
+    mode_spinner.addChangeListener(this);
+    mode_spinner.setEnabled(false);
+    button_panel.add(mode_spinner_label);
+    button_panel.add(mode_spinner);
+
+    key_spinner_label = new JLabel("key:");
+    key_spinner_model = new SpinnerNumberModel(0.0, -32400.0, 32400.0, 1.0);
+    key_spinner = new JSpinner(key_spinner_model);
     key_spinner.addChangeListener(this);
     key_spinner.setEnabled(false);
     button_panel.add(key_spinner_label);
     button_panel.add(key_spinner);
-
-    cents_spinner_label = new JLabel("cents:");
-    cents_spinner_model = new SpinnerNumberModel(0.0, -32400.0, 32400.0, 20.0);
-    cents_spinner = new JSpinner(cents_spinner_model);
-    cents_spinner.addChangeListener(this);
-    cents_spinner.setEnabled(false);
-    button_panel.add(cents_spinner_label);
-    button_panel.add(cents_spinner);
 
     button1 = create_button("add","add_pattern");
     button2 = create_button("remove","remove_pattern");
@@ -440,18 +440,18 @@ public class pattern_list_windowc extends JFrame implements ActionListener,ListS
     int index = table.getSelectedRow();
     song_playerc song_player = main_app.song_player;
     song_list_entryc en = (song_list_entryc) main_app.song_list.get(index);
-    if (e.getSource() == key_spinner) {
+    if (e.getSource() == mode_spinner) {
       //System.out.println("key stateChanged");
-      Number n = (Number) key_spinner.getValue();
+      Number n = (Number) mode_spinner.getValue();
       en.mode = n.intValue();
       song_player.pattern_mode = en.mode;
       main_app.tunning_table_window.update_scale();
       song_player.update_players();
     }
-    if (e.getSource() == cents_spinner) {
+    if (e.getSource() == key_spinner) {
       //System.out.println("cents stateChanged");
-      Number n = (Number) cents_spinner.getValue();
-      en.cents = (int) (n.doubleValue() * 65536.0);
+      Number n = (Number) key_spinner.getValue();
+      en.cents = scalec.key_to_cents(n.doubleValue());
       song_player.base_freq = Math.exp(Math.log(2) * (en.cents / (1200.0*65536.0)));    
       song_player.update_players();
     }
@@ -543,12 +543,12 @@ public class pattern_list_windowc extends JFrame implements ActionListener,ListS
       Number n;
       pattern_list_options_dialog d = new pattern_list_options_dialog(this);
       d.show();
-      if (d.OK_Clicked()) {
-        n = (Number) d.cents_spinner.getValue();
-        double i = n.doubleValue();
-        cents_spinner_model.setStepSize(i);
-        pattern_list_options_dialog.cents_step_size = (double) i;
-      }
+      //if (d.OK_Clicked()) {
+      //  n = (Number) d.cents_spinner.getValue();
+      //  double i = n.doubleValue();
+      //  cents_spinner_model.setStepSize(i);
+      //  pattern_list_options_dialog.cents_step_size = (double) i;
+      //}
     }
 
     if (action.equals("visible_columns")) {
@@ -639,12 +639,13 @@ public class pattern_list_windowc extends JFrame implements ActionListener,ListS
 
         //System.out.println("f: " + f);
         //System.out.println("de2");
-	key_spinner.setEnabled(true);
-        key_spinner.setValue(new Integer(en.mode));
+	mode_spinner.setEnabled(true);
+        mode_spinner.setValue(new Integer(en.mode));
         //System.out.println("de3");
 
-	cents_spinner.setEnabled(true);
-        cents_spinner.setValue(new Double(en.cents / 65536.0));
+	key_spinner.setEnabled(true);
+        double key = scalec.cents_to_key(en.cents);
+        key_spinner.setValue(new Double(key));
         //System.out.println("de4");
 	main_app.main_panel.repaint();
         main_app.song_player.update_players();
