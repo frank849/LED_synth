@@ -122,11 +122,12 @@ public class main_app implements Runnable,ActionListener {
         int m = rand.nextInt(notes_per_octave); 
         m = m - (notes_per_octave >> 1);
         int k = (-m * os) / notes_per_octave;
+        k = k + rand.nextInt(os) - (os >> 1);
         //k = k + rand.nextInt(1200)-600;
-        int ed = scalec.equal_divisions;
-        int d = rand.nextInt(ed) - (ed >> 1);
+        //int ed = scalec.equal_divisions;
+        //int d = rand.nextInt(ed) - (ed >> 1);
         //d = d - (notes_per_octave >> 1);
-        k  = k + scalec.key_to_cents(d);
+        //k  = k + scalec.key_to_cents(d);
         song_list.add(new song_list_entryc(pname,m,k,tname));
       }
     } catch (java.lang.NumberFormatException e) {
