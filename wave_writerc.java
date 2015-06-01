@@ -220,12 +220,28 @@ public class wave_writerc {
     float filter1 = 0.0f;
     float filter3 = 0.0f;
     int z = 0;
+    
+    sp.play_pattern(n-1);
+    sp.update_players();
+    //for (int x = 0;x < sp.pattern.length;x++) {
+      pattern_playerc.play_col(sp,sp.pattern.length-1,bsize);
+      int nl = pattern_playerc.get_note_length();
+      z = z + nl;
+      while (z >= bsize) {
+        for (int i = 0;i < bsize;i++) {buf2[i] = 0.0f;}
+        for (int y = 0;y < sp.player_array.size();y++) {
+          sampleplayerc p = (sampleplayerc) sp.player_array.get(y);
+          p.play(buf2,bsize);
+        }
+        z = z - bsize;
+      }
+    //}
     for (int t = 0;t < n;t++) {
       sp.play_pattern(t);
       sp.update_players();
       for (int x = 0;x < sp.pattern.length;x++) {
         pattern_playerc.play_col(sp,x,bsize);
-        int nl = pattern_playerc.get_note_length();
+        nl = pattern_playerc.get_note_length();
         z = z + nl;
         while (z >= bsize) {
           for (int i = 0;i < bsize;i++) {
