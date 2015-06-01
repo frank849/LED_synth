@@ -466,17 +466,27 @@ MouseMotionListener, WindowListener {
   public void mouseClicked(MouseEvent e) {}
   public void mouseEntered(MouseEvent e) {}
   public void mouseExited(MouseEvent e) {}
+  long time43;
+  long get_time43() {
+    long t = System.currentTimeMillis();
+    long r = t-time43;
+    time43 = t;
+    return r;
+  }
   public void mousePressed(MouseEvent e) {  
     int x = e.getX();    
     int y = e.getY();    
     int s = main_app.sqsize;
     int y2 = 0;//main_app.octave_offset;
+    long t = get_time43();
     //y2 = y2 * main_app.notes_per_octave;
     y2 = y2 + (y/s)+row_offset;
     row34 = y2;  
-    update_cell(x/s,y2);
+    if (t > 30) {
+      update_cell(x/s,y2);
+    }
     col34 = (x/s);    
-    //System.out.println("mp: " + col34);
+    
     int pos = main_app.pattern_player.pos;
     main_app.main_panel.update_pos_line(pos,null,0);
     main_app.pattern_player.pos = col34;
@@ -485,7 +495,7 @@ MouseMotionListener, WindowListener {
     this.requestFocusInWindow();
   }
   public void mouseReleased(MouseEvent e) {
-    //System.out.println("");
+    long t = get_time43();
   }
     
   public void mouseMoved(MouseEvent e) {
@@ -498,7 +508,6 @@ MouseMotionListener, WindowListener {
     int y2 = 0;//main_app.octave_offset;
     //y2 = y2 * main_app.notes_per_octave;
     y2 = y2 + (y/s)+row_offset;
-    //System.out.println("md: " + col34 + " " + (x/s));
     if ((col34 != (x/s))&(y2 == row34)) {
       update_cell(x/s,y2);
       col34 = (x/s);
