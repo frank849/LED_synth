@@ -124,9 +124,16 @@ public class new_song_wizardc extends JDialog implements ActionListener {
     //mos_panel.add(new JLabel("black notes"));
     //mos_panel.add(new JTextField(""));
 
+    go_back_to_first_panel();
     current_index = 0;
+
+  }
+  void go_back_to_first_panel() {
+    previous.clear();
     current_panel = interval_panel;
     add(current_panel, BorderLayout.CENTER);
+    backButton.setEnabled(false);
+    nextButton.setText("next");
 
   }
   JButton create_button(String text,String action) {  
@@ -312,6 +319,7 @@ public class new_song_wizardc extends JDialog implements ActionListener {
         //main_panelc.setup_scale34(main_app.notes_per_octave,bn);
 
         result = true;         
+        go_back_to_first_panel();
         hide();
       }
       if (current_index < 3) {
@@ -320,6 +328,8 @@ public class new_song_wizardc extends JDialog implements ActionListener {
         setVisible(true);
         current_panel.revalidate();
         current_panel.updateUI();
+      } else {
+        current_index = 0;
       }
       //current_panel.setVisible(true);
       //this.getContentPane().revalidate();
