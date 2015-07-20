@@ -121,14 +121,17 @@ public class main_app implements Runnable,ActionListener {
         String tname = (String) tnames[rand.nextInt(tsize)];
         int m = rand.nextInt(notes_per_octave); 
         m = m - (notes_per_octave >> 1);
-        int k = (-m * os) / notes_per_octave;
-        k = k + rand.nextInt(os) - (os >> 1);
+        int c = (-m * os) / notes_per_octave;
+        c = c + rand.nextInt(os) - (os >> 1);
+        double k = scalec.cents_to_key(c);
+        k = Math.rint(k);
+        c = scalec.key_to_cents(k);
         //k = k + rand.nextInt(1200)-600;
         //int ed = scalec.equal_divisions;
         //int d = rand.nextInt(ed) - (ed >> 1);
         //d = d - (notes_per_octave >> 1);
         //k  = k + scalec.key_to_cents(d);
-        song_list.add(new song_list_entryc(pname,m,k,tname));
+        song_list.add(new song_list_entryc(pname,m,c,tname));
       }
     } catch (java.lang.NumberFormatException e) {
       JOptionPane.showMessageDialog(main_frame,
@@ -948,6 +951,7 @@ public class main_app implements Runnable,ActionListener {
     }
     
   }
+
   //static int get_3fifth() {
   //  float prime2 = 1000000.0f;
   //  float prime3 = 1000000.0f;
