@@ -149,26 +149,28 @@ public class hex_keyboard_panelc extends JPanel implements MouseListener, KeyLis
         for (int hm = sz;hm > 0;hm--) {
           int o = main_panelc.harmonic_offset[hm-1];
           int a = p.get_cell(pos,y3+o);
- 	        if (a > 0) {
+          int s = ys*z;
+          a2 = a2 | (a ^ (a >> 1));
+          if (a > 0) {
             g.setColor((Color) main_panelc.harmonic_color.get(hm-1));
-            a2 = a;//g.setColor(Color.red);
-            g.fillRect(x2*z,y2*z,ys*z,ys*z);	            
-            if (a == 1) {
-              g.setColor(Color.black);
-              g.fillOval((x2*z)+((ys*z)>>2),(y2*z)+((ys*z)>>2),(ys*z)>>1,(ys*z)>>1);
-            }
-  	        if (a == 3) {
-              g.setColor(Color.white);
-              g.fillOval((x2*z)+((ys*z)>>2),(y2*z)+((ys*z)>>2),(ys*z)>>1,(ys*z)>>1);
-            }
-          }         
+          }
+    	  if (a == 1) {g.fillRect(x2*z,y2*z,s>>1,s);}
+    	  if (a == 2) {g.fillRect(x2*z,y2*z,s,s);}
+    	  if (a == 3) {
+            g.fillRect((x2*z)+(s>>1),y2*z,(s+1)>>1,s);	
+          }
         }
-        if (a2 == 0) {
+        if (a2 != 3) {
           int i43 = ((y3-1+npo)%npo);
+          int s = ys*z;
           if (i43 < 0) {i43 = i43 + npo;}
           if (main_panelc.get_scale34(npo-i43-1) == 1) {
             g.setColor(main_panelc.gray);
-            g.fillRect(x2*z,y2*z,ys*z,ys*z);	
+      	    if (a2 == 2) {g.fillRect(x2*z,y2*z,s>>1,s);}
+            if (a2 == 0) {g.fillRect(x2*z,y2*z,s,s);}
+     	    if (a2 == 1) {
+              g.fillRect((x2*z)+(s>>1),y2*z,(s+1)>>1,s);	
+            }
           }
         }
         g.setColor(Color.black);
