@@ -647,6 +647,7 @@ public class pattern_list_windowc extends JFrame implements ActionListener,ListS
         double key = scalec.cents_to_key(en.cents);
         key_spinner.setValue(new Double(key));
         //System.out.println("de4");
+        main_app.main_panel.update_size();
 	main_app.main_panel.repaint();
         main_app.song_player.update_players();
         main_app.update_status_bar();
