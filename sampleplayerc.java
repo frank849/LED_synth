@@ -21,6 +21,12 @@ public class sampleplayerc {
   //static double base_freq = 1.0;
   boolean playing;
   static adsr_envelopec envelope = new adsr_envelopec();
+  int envelope_mode;
+  int mode_time;
+  int ATTACK = 0;
+  int DECAY = 1;
+  int SUSTAIN = 2;
+  int RELEASE = 3;
 
   sampleplayerc() {
   }  
@@ -33,29 +39,43 @@ public class sampleplayerc {
   void note_on(int bsize) {
     //index = 0;
     //System.out.println("freq: " + freq + " ts: " + t.size + " sr: " + t.samplerate);
+    float sustain = envelope.sustain;
     int nl = pattern_playerc.get_note_length();    
     int a = (int) (nl*envelope.attack);
-    a = a - (a % bsize);
+
     if (a == 0) {
-      vol2 = vol;    
-      vol_step = 0.0001;
+      vol2 = vol;
+      envelope_mode = DECAY;
+      a = (int) (nl*envelope.decay);
+      if (a == 0) {
+        envelope_mode = SUSTAIN;
+        vol2 = vol * sustain;
+      } else {
+        mode_time = a;
+        vol_step = ((vol*sustain)-vol2)/a;    
+      }
     } else {
-      vol2 = vol * 0.001;
+      envelope_mode = ATTACK;
+      mode_time = a;
+      vol2 = 0;
       vol_step = vol / a;    
     }
+       
+
     playing = true;
   }
   void note_off(int bsize) {
     int nl = pattern_playerc.get_note_length();    
     int a = (int) (nl*envelope.release);
-    a = a - (a % bsize);
+
+    envelope_mode = RELEASE;
+    mode_time = a;
+    playing = false;      
     if (a == 0) {
       vol2 = 0.0;
-      //vol_step = -0.01;
     } else {
       vol_step = (-vol2) / a;
     }
-    playing = false;    
   }
   long get_long_freq(double freq,double s_rate) {
     double f = (freq * s_rate) / (1000.0 * sample_rate);  
@@ -65,45 +85,59 @@ public class sampleplayerc {
     float f = (float) ((freq * s_rate) / (1000.0 * sample_rate));  
     return f;    
   }
-  void play(float buf[],int buf_size) {
+
+  void play4(float buf[],int offset,int buf_size) {
     if (interpolation == 0) {
-      play0(buf,buf_size);
+      play0(buf,offset,buf_size);
     }
     if (interpolation == 1) {
-      play1(buf,buf_size);
+      play1(buf,offset,buf_size);
       //linear_play(buf,buf_size);
     }
     if (interpolation == 2) {
-      play2(buf,buf_size);
+      play2(buf,offset,buf_size);
       //quadratic_play(buf,buf_size);
     }
     if (interpolation == 3) {
-      cubic_play(buf,buf_size);
+      cubic_play(buf,offset,buf_size);
+    }
+  }
+  void play(float buf[],int buf_size) {
+    if ((playing == false) & (vol2 <= 0.0)) {return;}
+    int nl = pattern_playerc.get_note_length();    
+    int o = 0;
+    if (envelope_mode == SUSTAIN) {
+      play4(buf,o,buf_size);
+      return;
     }
     float sustain = envelope.sustain;
-    if ((vol2 >= vol) & (vol_step > 0.0)) {
-      int nl = pattern_playerc.get_note_length();    
-      int a = (int) (nl*envelope.decay);
-      a = a - (a % buf_size);
-      if (a == 0) {
-        vol2 = vol*sustain;
-        vol_step = 0.0;
-      } else {
-        vol2 = vol2 * 0.999;
-        vol_step = ((vol*sustain)-vol2)/a;
+    while (mode_time <= (buf_size-o)) {
+      play4(buf,o,mode_time+o);
+      vol2 = vol2 + (vol_step*(buf_size-o));
+      o = o + mode_time;
+      if (envelope_mode == DECAY) {
+        envelope_mode = SUSTAIN;
+        play4(buf,o,buf_size);
+        return;
+      }
+      if (envelope_mode == ATTACK) {
+        envelope_mode = DECAY;
+        int a = (int) (nl*envelope.decay);   
+        if (a == 0) {
+          envelope_mode = SUSTAIN;
+          vol2 = vol * sustain;
+        } else {
+          mode_time = a;
+          vol_step = ((vol*sustain)-vol2)/a;
+        }
       }
     }
-    if ((playing == true) & (vol_step < 0.0) & (vol2 <= (vol*sustain))) {
-      vol_step = 0.0;
-    }
-    //System.out.println("vol2: " + vol2 + " vol_step: " + vol_step + " buf_size: " + buf_size);
-    if (vol2 <= 0.0) {
-      vol2 = 0.0;
-      vol_step = 0.0;
-    }
-    vol2 = vol2 + (vol_step*buf_size);
+    play4(buf,o,buf_size);
+    mode_time = mode_time - buf_size + o;
+    vol2 = vol2 + (vol_step*(buf_size-o));
+
   }
-  void play0(float buf[],int buf_size) {
+  void play0(float buf[],int offset,int buf_size) {
     if (t == null) {return;}
     if ((playing == false) & (vol2 <= 0.0)) {return;}
     float freq2 = get_float_freq(freq,t.samplerate);
@@ -111,7 +145,7 @@ public class sampleplayerc {
     float f_vol_inc = ((float) vol_step);
     int bs = buf_size;
     int i2 = 0;    
-    for (int i = 0;i < bs;i++) {
+    for (int i = offset;i < bs;i++) {
       i2 = (int) indexf;
       if (i2 >= t.size) {
         indexf = indexf - t.size;
@@ -123,7 +157,7 @@ public class sampleplayerc {
       indexf = indexf + freq2;
     }
   }
-  void linear_play(float buf[],int buf_size) {
+  void linear_play(float buf[],int offset,int buf_size) {
     if (t == null) {return;}
     if ((playing == false) & (vol2 <= 0.0)) {return;}
     double freq2 = get_float_freq(freq,t.samplerate);
@@ -132,7 +166,7 @@ public class sampleplayerc {
     float f_vol_inc = ((float) vol_step);
     int bs = buf_size;
     int i2 = 0;    
-    for (int i = 0;i < bs;i++) {
+    for (int i = offset;i < bs;i++) {
       i2 = (int) indexf;
       while (i2 >= t.size) {
         indexf = indexf - t.size;
@@ -148,7 +182,7 @@ public class sampleplayerc {
       indexf = indexf + freq2;
     }
   }
-  void play1(float buf[],int buf_size) {
+  void play1(float buf[],int offset,int buf_size) {
     if (t == null) {return;}
     if ((playing == false) & (vol2 <= 0.0)) {return;}
     float iw = 1.0f / fw;
@@ -158,7 +192,7 @@ public class sampleplayerc {
     float f_vol_inc = ((float) vol_step);
     int bs = buf_size;
     int i2 = 0;    
-    for (int i = 0;i < bs;i++) {
+    for (int i = offset;i < bs;i++) {
       i2 = (int) indexf;
       while (i2 >= t.size) {
         indexf = indexf - t.size;
@@ -176,7 +210,7 @@ public class sampleplayerc {
       indexf = indexf + freq2;
     }
   }
-  void quadratic_play(float buf[],int buf_size) {
+  void quadratic_play(float buf[],int offset,int buf_size) {
     if (t == null) {return;}
     if ((playing == false) & (vol2 <= 0.0)) {return;}
     double freq2 = get_float_freq(freq,t.samplerate);
@@ -184,7 +218,7 @@ public class sampleplayerc {
     float f_vol_inc = ((float) vol_step / 2);
     int bs = buf_size;
     int i2 = 0;    
-    for (int i = 0;i < bs;i++) {
+    for (int i = offset;i < bs;i++) {
       i2 = (int) indexf;
       while (i2 >= t.size) {
         indexf = indexf - t.size;
@@ -208,7 +242,7 @@ public class sampleplayerc {
     }
   }
 
-  void play2(float buf[],int buf_size) {
+  void play2(float buf[],int offset,int buf_size) {
     if (t == null) {return;}
     if ((playing == false) & (vol2 <= 0.0)) {return;}
     float w = fw;
@@ -219,7 +253,7 @@ public class sampleplayerc {
     float f_vol_inc = ((float) vol_step / 2);
     int bs = buf_size;
     int i2 = 0;    
-    for (int i = 0;i < bs;i++) {
+    for (int i = offset;i < bs;i++) {
       i2 = (int) indexf;
       while (i2 >= t.size) {
         indexf = indexf - t.size;
@@ -260,7 +294,7 @@ public class sampleplayerc {
     }
   }
 
-  void cubic_play(float buf[],int buf_size) {
+  void cubic_play(float buf[],int offset,int buf_size) {
     if (t == null) {return;}
     if ((playing == false) & (vol2 <= 0.0)) {return;}
     
@@ -270,7 +304,7 @@ public class sampleplayerc {
     float f_vol_inc = ((float) vol_step);
     int bs = buf_size;
     int i2 = 0;    
-    for (int i = 0;i < bs;i++) {
+    for (int i = offset;i < bs;i++) {
         i2 = (int) indexf;
         while (i2 >= t.size) {
           indexf = indexf - t.size;
@@ -297,7 +331,7 @@ public class sampleplayerc {
     }
   }
 
-  void play3(float buf[],int buf_size) {
+  void play3(float buf[],int offset,int buf_size) {
     if (t == null) {return;}
     if ((playing == false) & (vol2 <= 0.0)) {return;}
     
@@ -310,7 +344,7 @@ public class sampleplayerc {
     if (fw < 0.5) {
       float w = fw * 2;
       float iw = 1.0f / w;
-      for (int i = 0;i < bs;i++) {
+      for (int i = offset;i < bs;i++) {
         i2 = (int) indexf;
         while (i2 >= t.size) {
           indexf = indexf - t.size;
@@ -333,7 +367,7 @@ public class sampleplayerc {
     } else {
       float w = (fw * 2)-1;
 
-      for (int i = 0;i < bs;i++) {
+      for (int i = offset;i < bs;i++) {
         i2 = (int) indexf;
         while (i2 >= t.size) {
           indexf = indexf - t.size;

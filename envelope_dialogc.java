@@ -24,7 +24,7 @@ public class envelope_dialogc extends JDialog implements ActionListener {
     spinner = new JSpinner[20];
     add_spinner("attack time: ",new SpinnerNumberModel(0.0,0.0,3.0,0.1));    
     add_spinner("decay time: ",new SpinnerNumberModel(0.0,0.0,3.0,0.1));    
-    add_spinner("sustain level: ",new SpinnerNumberModel(1.0,0.0,1.0,0.1));    
+    add_spinner("sustain level: ",new SpinnerNumberModel(1.0,0.0,100.0,0.1));    
     add_spinner("release time: ",new SpinnerNumberModel(1.0,0.0,3.0,0.1));    
     create_button("ok","ok");
     create_button("cancel","cancel");

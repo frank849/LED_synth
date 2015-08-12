@@ -245,29 +245,18 @@ MouseMotionListener, WindowListener {
           int o = harmonic_offset[hm-1];
           int a = p.get_cell(x2,y3+o);
 
-        //if ((a == 0) & ((((y+11)*7)%12)<5)) {}
-    	  if (a > 0) {
+          if (a > 0) {
             g.setColor((Color) harmonic_color.get(hm-1));
-            //g.setColor(Color.red);
+          }
+    	  if (a == 1) {
+            g.fillRect(x*s,y*s,s>>1,s);	
+          }
+    	  if (a == 2) {
             g.fillRect(x*s,y*s,s,s);	
           }
-
-          if (a == 1) {
-            g.setColor(black);
-            g.fillOval((x*s)+(s>>2),(y*s)+(s>>2),s>>1,s>>1);
+    	  if (a == 3) {
+            g.fillRect((x*s)+(s>>1),y*s,(s+1)>>1,s);	
           }
-        //if (a == 2) {
-        //  g.setColor(purple);
-        //  g.fillOval((x*s)+(s>>2),(y*s)+(s>>2),s>>1,s>>1);
-        //}
-          if (a == 3) {
-            g.setColor(white);
-            g.fillOval((x*s)+(s>>2),(y*s)+(s>>2),s>>1,s>>1);
-          }
-          //if ((a > 0) & ((a & 1) == 1)) {
-          //  g.setColor(black);
-          //  g.drawOval((x*s)+(s>>2),(y*s)+(s>>2),s>>1,s>>1);
-          //}
         }
         x = x + 1;
       }
