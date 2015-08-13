@@ -312,18 +312,22 @@ class pattern_list_table_modelc extends  AbstractTableModel {
       main_app.update_status_bar();
     }
     if (col == 1) {
-      e.mode = Integer.parseInt(str);
-      song_player.pattern_mode = e.mode;
-      main_app.tunning_table_window.update_scale();
-      song_player.update_players();
-      main_app.main_panel.repaint();
+      try {
+        e.mode = Integer.parseInt(str.trim());
+        song_player.pattern_mode = e.mode;
+        main_app.tunning_table_window.update_scale();
+        song_player.update_players();
+        main_app.main_panel.repaint();
+      } catch (java.lang.NumberFormatException ex) {}
     }
     if (col == 2) {
-      double key = Double.parseDouble(str);
-      e.cents = scalec.key_to_cents(key);
-      song_player.base_freq = Math.exp(Math.log(2) * (e.cents / (1200.0 * 65536.0)));    
-      main_app.song_player.update_players();
-      main_app.main_panel.repaint();
+      try {
+        double key = Double.parseDouble(str.trim());
+        e.cents = scalec.key_to_cents(key);
+        song_player.base_freq = Math.exp(Math.log(2) * (e.cents / (1200.0 * 65536.0)));    
+        main_app.song_player.update_players();
+        main_app.main_panel.repaint();
+      } catch (java.lang.NumberFormatException ex) {}
     }
     if (col == 3) {
       scalec s = (scalec) main_app.tuning_map.get(str);
@@ -456,11 +460,8 @@ public class pattern_list_windowc extends JFrame implements ActionListener,ListS
       song_player.update_players();
     }
     main_app.main_panel.repaint();
-    //System.out.println("up UI 1");
     //table.updateUI();
     table.repaint();
-    //System.out.println("up UI 2");
-    //System.out.println("n: " + n.intValue());
   }
   void play_last_pattern() {
     int s = main_app.song_list.size();
@@ -471,9 +472,7 @@ public class pattern_list_windowc extends JFrame implements ActionListener,ListS
     //int s = list.getSize();
     int s = main_app.song_list.size();
     i = (i + 1) % s;
-    //System.out.println("de0");
     table.changeSelection(i,0,false,false);
-    //System.out.println("de6");    
   }
   void add_to_song_list(String s) {
     //int i = listbox.getSelectedIndex()+1;
@@ -629,7 +628,6 @@ public class pattern_list_windowc extends JFrame implements ActionListener,ListS
     //System.out.println("last index " + index);
     //if ((e.getValueIsAdjusting() == false) & (main_app.song_list.size() > 0)) {
       //int index = listbox.getSelectedIndex();  
-      //System.out.println("de1");
       int index = table.getSelectedRow();
       main_panelc.song_pos = index;
       if (index >= 0) {
@@ -637,21 +635,16 @@ public class pattern_list_windowc extends JFrame implements ActionListener,ListS
         main_app.song_player.play_pattern(index);
         main_app.tunning_table_window.update();
 
-        //System.out.println("f: " + f);
-        //System.out.println("de2");
 	mode_spinner.setEnabled(true);
         mode_spinner.setValue(new Integer(en.mode));
-        //System.out.println("de3");
 
 	key_spinner.setEnabled(true);
         double key = scalec.cents_to_key(en.cents);
         key_spinner.setValue(new Double(key));
-        //System.out.println("de4");
         main_app.main_panel.update_size();
 	main_app.main_panel.repaint();
         main_app.song_player.update_players();
         main_app.update_status_bar();
-        //System.out.println("de5");
 
       }
       //System.out.println("base_freq: " + sampleplayerc.base_freq);
