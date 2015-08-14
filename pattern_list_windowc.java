@@ -16,13 +16,15 @@ import java.awt.event.*;
 //import java.util.zip.*;
 
 class pattern_list_options_dialog extends JDialog implements ActionListener {
-  JPanel cents_step_panel;
-  JSpinner cents_spinner;
+  JPanel key_step_panel;
+  JComboBox key_step_combobox;
   JPanel button_panel;
   JCheckBox pattern_check_box;
   JCheckBox tunning_check_box;
   boolean result;
-  static double cents_step_size = 20.0;
+  static double key_step_size;
+  String[] key_step_combobox_values = 
+  {"1","0.5","0.25","0.2","0.1","0.05","0.04","0.02","0.01"};
   pattern_list_options_dialog(Frame owner) {
     super(owner,"pattern list options",true);
     this.getContentPane().setLayout(new GridLayout(4,1));
@@ -38,14 +40,14 @@ class pattern_list_options_dialog extends JDialog implements ActionListener {
     b = pattern_list_table_modelc.new_tunnings;
     tunning_check_box.setSelected(b);
 
-    cents_step_panel = new JPanel();
-    cents_step_panel.setLayout(new GridLayout(1,2));    
-    this.getContentPane().add(cents_step_panel);    
+    key_step_panel = new JPanel();
+    key_step_panel.setLayout(new GridLayout(1,2));    
+    this.getContentPane().add(key_step_panel);    
 
-    cents_step_panel.add(new JLabel("cents step:"));
-    double s = cents_step_size;
-    cents_spinner = new JSpinner(new SpinnerNumberModel(s,0.1,200.0,1.0));
-    cents_step_panel.add(cents_spinner);
+    key_step_panel.add(new JLabel("key step:"));
+    key_step_combobox = new JComboBox(key_step_combobox_values);
+    key_step_panel.add(key_step_combobox);
+    key_step_combobox.setEditable(true);
 
     button_panel = new JPanel();
     this.getContentPane().add(button_panel);    
@@ -542,12 +544,12 @@ public class pattern_list_windowc extends JFrame implements ActionListener,ListS
       Number n;
       pattern_list_options_dialog d = new pattern_list_options_dialog(this);
       d.show();
-      //if (d.OK_Clicked()) {
-      //  n = (Number) d.cents_spinner.getValue();
-      //  double i = n.doubleValue();
-      //  cents_spinner_model.setStepSize(i);
-      //  pattern_list_options_dialog.cents_step_size = (double) i;
-      //}
+      if (d.OK_Clicked()) {
+        ComboBoxEditor ed = d.key_step_combobox.getEditor();
+        double f = Double.parseDouble((String) ed.getItem());
+        key_spinner_model.setStepSize(f);
+        pattern_list_options_dialog.key_step_size = f;
+      }
     }
 
     if (action.equals("visible_columns")) {
