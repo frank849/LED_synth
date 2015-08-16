@@ -20,6 +20,7 @@ public class tunning_table_windowc extends JFrame implements ChangeListener {
   JLabel label[];
   JCheckBox check_box[];
   JSpinner spinner[];
+  static double step_size = 0.1;
   tunning_table_windowc() {
     setBounds(20,20,200,600);
     this.setTitle("tunning table");
@@ -56,7 +57,7 @@ public class tunning_table_windowc extends JFrame implements ChangeListener {
       m = m / scalec.get_interval_size();
       //System.out.println(m);
       //System.out.println(sp.scale.get(i));
-      spinner[i] = new JSpinner(new SpinnerNumberModel(sp.scale.get(i), -m, m, 0.1));
+      spinner[i] = new JSpinner(new SpinnerNumberModel(sp.scale.get(i), -m, m, step_size));
       //label[i] = new JLabel(i + ":");
       spinner[i].addChangeListener(this);
       //panel.add(label[i]);
@@ -69,6 +70,13 @@ public class tunning_table_windowc extends JFrame implements ChangeListener {
       panel.add(spinner[i]);    
     }
     this.getContentPane().add(panel2);
+  }
+  void update_step_size() {
+    int n = main_app.notes_per_octave;
+    for (int i = 0;i < n;i++) {
+      SpinnerNumberModel m = (SpinnerNumberModel) spinner[i].getModel();
+      m.setStepSize(step_size);
+    }    
   }
   void update() {
     int n = main_app.notes_per_octave;

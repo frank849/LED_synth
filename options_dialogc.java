@@ -25,20 +25,28 @@ public class options_dialogc extends JDialog implements ActionListener{
   String[] interpolation_names = {"Nearest neighbor","linear","quadratic","cubic"};
   JComboBox sample_rate_combo_box;
   String[] sample_rates = {"44100","48000","88200","96000","176400","192000"};
+  String[] tunning_table_step_size_combobox_values = 
+  {"1","0.5","0.25","0.2","0.1","0.05","0.04","0.02","0.01"};
+  JComboBox tunning_table_step_size_combobox;
 
   options_dialogc(Frame owner,String title) {
     super(owner,title,false);
     setBounds(20,20,200,200);
     textfield = new JTextField[20];
     spinner = new JSpinner[20];
-    this.getContentPane().setLayout(new GridLayout(9,2));
+    this.getContentPane().setLayout(new GridLayout(10,2));
     add_textfield("lowest note freq:");
     add_textfield("highest note freq:");
     sample_rate_combo_box = add_combobox("sample rate:",sample_rates);
     sample_rate_combo_box.setEditable(true);
     //sample_rate_combo_box.setSelectedIndex(1);
 
+
     interpolation_combo_box = add_combobox("interpolation: ",interpolation_names);
+
+    tunning_table_step_size_combobox = add_combobox("tunning table step size: ",
+    tunning_table_step_size_combobox_values);
+    tunning_table_step_size_combobox.setEditable(true);
 
     //add_spinner("octave cents: ",new SpinnerNumberModel(1200,0,32000,1));
     add_spinner("beats per minute: ",new SpinnerNumberModel(60.0,3.0,1800.0,1.0));    
@@ -84,6 +92,10 @@ public class options_dialogc extends JDialog implements ActionListener{
     textfield[1].setText(Integer.toString(song_playerc.highest_note_freq));
     ComboBoxEditor ed = sample_rate_combo_box.getEditor();
     ed.setItem(Integer.toString(pattern_playerc.sample_rate));
+
+    ed = tunning_table_step_size_combobox.getEditor();
+    ed.setItem(Double.toString(tunning_table_windowc.step_size));
+
     //spinner[0].setValue(new Integer(main_app.octave_cents));
     int i = sampleplayerc.interpolation;
     interpolation_combo_box.setSelectedIndex(i);
@@ -113,6 +125,9 @@ public class options_dialogc extends JDialog implements ActionListener{
          pattern_playerc.sample_rate = sample_rate;
          prefs.putInt("sample_rate",sample_rate);
       }
+      ed = tunning_table_step_size_combobox.getEditor();
+      tunning_table_windowc.step_size = Double.parseDouble((String) ed.getItem());
+      main_app.tunning_table_window.update_step_size();
       int i = interpolation_combo_box.getSelectedIndex();
       sampleplayerc.interpolation = i;
       prefs.putInt("interpolation",i);
