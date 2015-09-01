@@ -370,12 +370,24 @@ public class main_app implements Runnable,ActionListener {
   }
   static void export_wave() {
       try{
-        FileDialog f = new FileDialog(main_frame,"export to wave",FileDialog.SAVE);
-        f.setDirectory(main_panelc.dirname);
-        f.setFile("output90613708930439146539.wav");
-        f.show();
-        if (f.getFile() != null) {
-          String filename = f.getDirectory() + f.getFile();
+        //FileDialog f = new FileDialog(main_frame,"export to wave",FileDialog.SAVE);
+        //System.out.println("tmp: " + System.getProperty("java.io.tmpdir"));
+        //String tmp_dir = System.getProperty("java.io.tmpdir");
+        //String tmp_dir = "";
+        String tmp_dir = prefs.get("export_wave_directory",main_panelc.dirname);
+
+        JFileChooser fc = new JFileChooser();
+        fc.setSelectedFile(new File(tmp_dir,"output90613708930439146539.wav"));
+        int r = fc.showDialog(main_frame,"export to wave");
+        //f.setDirectory(main_panelc.dirname);
+        //f.setFile("output90613708930439146539.wav");
+        //f.show();
+        if (r == JFileChooser.APPROVE_OPTION) {
+          File f = fc.getSelectedFile();
+          //String filename = f.getDirectory() + f.getFile();
+          String filename = f.getParent() + File.separator + f.getName();
+          prefs.put("export_wave_directory",f.getParent());
+          System.out.println(filename);
           //pattern_list_window.table.changeSelection(0,0,false,false);
           boolean b = wave_writerc.read_wave_id(new File(filename));
           if (b == true) {
@@ -456,7 +468,10 @@ public class main_app implements Runnable,ActionListener {
   static void open2() {
       try{
         FileDialog f = new FileDialog(main_frame,"open pattern",FileDialog.LOAD);
+        main_panelc.dirname = prefs.get("song_directory",main_panelc.dirname);
+        //System.out.println(main_panelc.dirname);
         f.setDirectory(main_panelc.dirname);
+        //f.setDirectory("a3928798237"); 
         f.show();
         if (f.getFile() != null) {
           String filename = f.getDirectory() + f.getFile();
@@ -477,6 +492,7 @@ public class main_app implements Runnable,ActionListener {
           main_panel.repaint();
           main_panelc.filename = f.getFile();
           main_panelc.dirname = f.getDirectory();
+          prefs.put("song_directory",main_panelc.dirname);
 	
         }         
       } catch (Exception err) {
@@ -488,6 +504,7 @@ public class main_app implements Runnable,ActionListener {
   static void save2() {
       try{
         FileDialog f = new FileDialog(main_frame,"save pattern",FileDialog.SAVE);
+        main_panelc.dirname = prefs.get("song_directory",null);
         f.setDirectory(main_panelc.dirname);
         //f.setFile(main_panelc.filename);
         f.show();
@@ -500,6 +517,7 @@ public class main_app implements Runnable,ActionListener {
             save_file(filename);
             main_panelc.filename = f.getFile();
             main_panelc.dirname = f.getDirectory();
+            prefs.put("song_directory",main_panelc.dirname);
           } else {
             JOptionPane.showMessageDialog(main_frame,new JLabel("file already exists"),"error",JOptionPane.ERROR_MESSAGE);
           }
@@ -990,26 +1008,37 @@ public class main_app implements Runnable,ActionListener {
     TextTransfer = new TextTransferc();
     init_primes_table75();
     //int ptlen = primes_table75.length;
-    int ptlen = 15;
+    prefs = Preferences.userRoot().node("led_synth23948797523");
+    int ptlen = prefs.getInt("num_primes",15);
     prime_list = new prime_listc(ptlen);
     //for (int i = 0;i < ptlen;i++) {
     //  prime_list.prime_factor[i] = primes_table75[i];
     //}
-    prefs = Preferences.userRoot().node("led_synth23948797523");
     sampleplayerc.sample_rate = prefs.getInt("sample_rate",44100);
     sampleplayerc.interpolation = prefs.getInt("interpolation",2);
-
 
     tuning_map = new HashMap();
     pattern_list = new HashMap();
     song_list = new Vector();
     song_player = new song_playerc(new instrumentc());
-    new_song(12,"default");
+    
+    get_prefs();
+    new_song();
     pattern_player = new pattern_playerc(song_player);
     //pattern_list.add(new patternc(12,"default2"));
     javax.swing.SwingUtilities.invokeLater(new main_app());        
   }
-  static void new_song(int et,String patname) {
+  static void get_prefs() {
+    notes_per_octave = prefs.getInt("notes_per_octave",notes_per_octave);
+    number_of_keys = prefs.getInt("number_of_keys",number_of_keys);
+    int b = patternc.black_notes_per_octave;
+    b = prefs.getInt("black_notes_per_octave",b);
+    patternc.black_notes_per_octave = b;
+    scalec.get_prefs(prefs);
+  }
+  static void new_song() {
+    int et = notes_per_octave;
+    String patname = prefs.get("first_pattern_name","default");
     pattern_list.clear();
     song_list.clear();
     main_panelc.song_pos = -1;
@@ -1077,7 +1106,7 @@ public class main_app implements Runnable,ActionListener {
     main_frame.setJMenuBar(main_menu_bar);
     main_frame.setBounds(30,30,500,500);
     main_frame.setVisible(true);
-    main_frame.setTitle("frank's java LED Synthesizer 2.4");
+    main_frame.setTitle("frank's java LED Synthesizer 2.5");
     pattern_list_window = new pattern_list_windowc("pattern list");
     //pattern_list_window.setVisible(true);
     string_table_options_dialog = new string_table_options_dialogc(main_frame,"options");

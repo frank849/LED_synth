@@ -1,4 +1,6 @@
 import java.util.Arrays;
+import java.util.prefs.Preferences;
+
 
 public class scalec {
   int scale[];
@@ -8,12 +10,20 @@ public class scalec {
   //static int numerator = 2;
   //static int denominator = 1;
   static int interval_size = 1200<<16;
-  static double generator = 7;
-  static double period = 12;
-  static double offset = 0;
+  static float generator = 7;
+  static float period = 12;
+  static float offset = 0;
+
   scalec(int n) {
     scale = new int[n];
     size = (short) n;
+  }
+  static void get_prefs(Preferences prefs) {
+    equal_divisions = prefs.getInt("equal_divisions",equal_divisions);
+    generator = prefs.getInt("generator",(int) generator);
+    period = prefs.getInt("period",(int) period);
+    interval_size = prefs.getInt("scalec_interval_size",interval_size);
+    
   }
   static double get_interval_fraction() {
     //double frac = numerator;
