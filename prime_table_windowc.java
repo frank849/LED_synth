@@ -20,10 +20,11 @@ class prime_table_modelc extends  AbstractTableModel {
      if (column == 0) {return "freq";}
      if (column == 1) {return "DB vol";}
      if (column == 2) {return "bandwidth";}
+     if (column == 3) {return "steps";}
      return null;
   }
   public int getColumnCount() { 
-    return 3;
+    return 4;
   }
   public int getRowCount() { 
     return main_app.prime_list.num_primes;
@@ -38,6 +39,12 @@ class prime_table_modelc extends  AbstractTableModel {
     }
     if (col == 2) {
       return new Float(main_app.prime_list.prime_factor_bw[row]);
+    }
+    if (col == 3) {
+      double f1 = main_app.prime_list.prime_factor[row];
+      double f2 = scalec.get_interval_fraction();
+      int ed = scalec.equal_divisions;
+      return new Float((Math.log(f1)*ed)/Math.log(f2));
     }
     return null;
   }
@@ -64,6 +71,13 @@ class prime_table_modelc extends  AbstractTableModel {
     if (col == 2) {
       float f = Float.parseFloat(str);
       main_app.prime_list.prime_factor_bw[row] = f;
+    }
+    if (col == 3) {
+      float f1 = Float.parseFloat(str);
+      double f2 = scalec.get_interval_fraction();
+      int ed = scalec.equal_divisions;
+      float f3 = (float) Math.exp(Math.log(f2)*(f1/ed));
+      main_app.prime_list.prime_factor[row] = f3;
     }
   }
 }
