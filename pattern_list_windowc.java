@@ -9,11 +9,14 @@ import javax.swing.table.*;
 import java.text.*;
 import java.awt.*;
 import java.awt.event.*;                       
+import java.util.prefs.Preferences;
+
 //import java.awt.datatransfer.*;
 
 //import javax.imageio.*;
 //import java.awt.image.*;
 //import java.util.zip.*;
+
 
 class pattern_list_options_dialog extends JDialog implements ActionListener {
   JPanel key_step_panel;
@@ -25,10 +28,13 @@ class pattern_list_options_dialog extends JDialog implements ActionListener {
   static double key_step_size;
   String[] key_step_combobox_values = 
   {"1","0.5","0.25","0.2","0.1","0.05","0.04","0.02","0.01"};
+  Preferences prefs;
+  
   pattern_list_options_dialog(Frame owner) {
     super(owner,"pattern list options",true);
     this.getContentPane().setLayout(new GridLayout(4,1));
 
+    prefs = pattern_list_table_modelc.prefs;
     boolean b;
     pattern_check_box = new JCheckBox("create new patterns");
     this.getContentPane().add(pattern_check_box);
@@ -48,6 +54,9 @@ class pattern_list_options_dialog extends JDialog implements ActionListener {
     key_step_combobox = new JComboBox(key_step_combobox_values);
     key_step_panel.add(key_step_combobox);
     key_step_combobox.setEditable(true);
+
+    String v = prefs.get("key_step_value","1");
+    key_step_combobox.setSelectedItem(v);
 
     button_panel = new JPanel();
     this.getContentPane().add(button_panel);    
@@ -73,8 +82,16 @@ class pattern_list_options_dialog extends JDialog implements ActionListener {
       boolean b;
       b = pattern_check_box.isSelected();
       pattern_list_table_modelc.new_patterns = b;
+      prefs.putBoolean("new_patterns",b);
       b = tunning_check_box.isSelected();
       pattern_list_table_modelc.new_tunnings = b;
+      prefs.putBoolean("new_tunnings",b);
+
+      //String s = (String) key_step_combobox.getSelectedItem();
+      //prefs.put("key_step_value",s);
+      //int i = key_step_combobox.getSelectedIndex();
+      //prefs.putInt("key_step_combobox_index",i);
+
       result = true;
     }
     hide();
@@ -263,8 +280,9 @@ class pattern_list_column_modelc extends DefaultTableColumnModel {
   }
 }
 class pattern_list_table_modelc extends  AbstractTableModel {
-  static boolean new_patterns = true;
-  static boolean new_tunnings = true;
+  static Preferences prefs = main_app.prefs.node("pattern_list_options");
+  static boolean new_patterns = prefs.getBoolean("new_patterns",true);
+  static boolean new_tunnings = prefs.getBoolean("new_tunnings",true);
   static DecimalFormat formatter = new DecimalFormat("#.####");
 
   public String getColumnName(int column) {
@@ -401,8 +419,13 @@ public class pattern_list_windowc extends JFrame implements ActionListener,ListS
     button_panel.add(mode_spinner_label);
     button_panel.add(mode_spinner);
 
+    
+    Preferences prefs = pattern_list_table_modelc.prefs;
+    String key_step_str = prefs.get("key_step_value","1");
+    double key_step = Double.parseDouble(key_step_str);
+
     key_spinner_label = new JLabel("key:");
-    key_spinner_model = new SpinnerNumberModel(0.0, -32400.0, 32400.0, 1.0);
+    key_spinner_model = new SpinnerNumberModel(0.0, -32400.0, 32400.0, key_step);
     key_spinner = new JSpinner(key_spinner_model);
     key_spinner.addChangeListener(this);
     key_spinner.setEnabled(false);
@@ -444,6 +467,7 @@ public class pattern_list_windowc extends JFrame implements ActionListener,ListS
   }
   public void stateChanged(ChangeEvent e) {
     int index = table.getSelectedRow();
+    if (index == -1) {return;}
     song_playerc song_player = main_app.song_player;
     song_list_entryc en = (song_list_entryc) main_app.song_list.get(index);
     if (e.getSource() == mode_spinner) {
@@ -545,10 +569,20 @@ public class pattern_list_windowc extends JFrame implements ActionListener,ListS
       pattern_list_options_dialog d = new pattern_list_options_dialog(this);
       d.show();
       if (d.OK_Clicked()) {
-        ComboBoxEditor ed = d.key_step_combobox.getEditor();
-        double f = Double.parseDouble((String) ed.getItem());
-        key_spinner_model.setStepSize(f);
-        pattern_list_options_dialog.key_step_size = f;
+        String s = (String) d.key_step_combobox.getSelectedItem();
+        try {
+          //ComboBoxEditor ed = d.key_step_combobox.getEditor();
+          double f = Double.parseDouble(s);
+          key_spinner_model.setStepSize(f);
+          pattern_list_options_dialog.key_step_size = f;
+          Preferences prefs = pattern_list_table_modelc.prefs;
+          prefs.put("key_step_value",s);
+        } catch (NumberFormatException ex) {
+          JOptionPane.showMessageDialog(this,
+            s + " is invalid","error",
+          JOptionPane.ERROR_MESSAGE);          
+
+        }
       }
     }
 

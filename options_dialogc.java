@@ -48,6 +48,9 @@ public class options_dialogc extends JDialog implements ActionListener{
     tunning_table_step_size_combobox_values);
     tunning_table_step_size_combobox.setEditable(true);
 
+    String v = main_app.prefs.get("tunning_table_step_size","1");
+    tunning_table_step_size_combobox.setSelectedItem(v);
+
     //add_spinner("octave cents: ",new SpinnerNumberModel(1200,0,32000,1));
     add_spinner("beats per minute: ",new SpinnerNumberModel(60.0,3.0,1800.0,1.0));    
     int np = main_app.prime_list.num_primes;
@@ -125,9 +128,22 @@ public class options_dialogc extends JDialog implements ActionListener{
          pattern_playerc.sample_rate = sample_rate;
          prefs.putInt("sample_rate",sample_rate);
       }
+
+
       ed = tunning_table_step_size_combobox.getEditor();
-      tunning_table_windowc.step_size = Double.parseDouble((String) ed.getItem());
-      main_app.tunning_table_window.update_step_size();
+      String s = (String) ed.getItem();
+      try {
+        double f = Double.parseDouble(s);
+        tunning_table_windowc.step_size = f;
+        prefs.put("tunning_table_step_size",s);
+        main_app.tunning_table_window.update_step_size();
+      } catch (NumberFormatException ex) {
+          JOptionPane.showMessageDialog(this,
+            s + " is invalid","error",
+          JOptionPane.ERROR_MESSAGE);          
+      }
+
+
       int i = interpolation_combo_box.getSelectedIndex();
       sampleplayerc.interpolation = i;
       prefs.putInt("interpolation",i);
@@ -135,6 +151,7 @@ public class options_dialogc extends JDialog implements ActionListener{
       main_app.tempo = n.floatValue();
       n = (Number) spinner[1].getValue();
       int np = n.intValue();
+      prefs.putInt("num_primes",np);
       n = (Number) spinner[2].getValue();
       hex_keyboard_panelc.x_step = n.intValue();
       n = (Number) spinner[3].getValue();

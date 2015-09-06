@@ -24,6 +24,9 @@ public class tunning_table_windowc extends JFrame implements ChangeListener {
   tunning_table_windowc() {
     setBounds(20,20,200,600);
     this.setTitle("tunning table");
+    String v = main_app.prefs.get("tunning_table_step_size","1");
+    step_size = Double.parseDouble(v);
+
   }
   void create_new_panel() {
     song_playerc sp = main_app.song_player;
