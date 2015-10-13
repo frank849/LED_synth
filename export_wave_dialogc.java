@@ -13,6 +13,7 @@ import java.awt.datatransfer.*;
 import javax.imageio.*;
 import java.awt.image.*;
 import java.util.zip.*;
+import java.util.prefs.Preferences;
 
 public class export_wave_dialogc extends JDialog implements ActionListener {
   //JPanel button_panel;
@@ -34,6 +35,7 @@ public class export_wave_dialogc extends JDialog implements ActionListener {
   export_wave_dialogc(Frame owner) {
     super(owner,"wave options",true);
     this.setLayout(new GridLayout(5,2));
+    Preferences prefs = main_app.prefs;
     //button_panel = new JPanel();
     //button_panel.setLayout(new GridLayout(1,2));
     //option_panel = new JPanel();
@@ -59,21 +61,32 @@ public class export_wave_dialogc extends JDialog implements ActionListener {
 
     this.getContentPane().add(op_mono);
     this.getContentPane().add(op_stereo);
+
+    double fi = prefs.getDouble("wave_fade_in",2.0);
     fade_in_label = new JLabel("fade in:");
-    fade_in_spinner = new JSpinner(new SpinnerNumberModel(2.0, 0.0, 100.0, 0.5));
+    fade_in_spinner = new JSpinner(new SpinnerNumberModel(fi, 0.0, 100.0, 0.5));
     this.getContentPane().add(fade_in_label);
     this.getContentPane().add(fade_in_spinner);
 
+    double fo = prefs.getDouble("wave_fade_out",2.0);
     fade_out_label = new JLabel("fade out:");
-    fade_out_spinner = new JSpinner(new SpinnerNumberModel(2.0,0.0,100.0,0.5));
+    fade_out_spinner = new JSpinner(new SpinnerNumberModel(fo,0.0,100.0,0.5));
     this.getContentPane().add(fade_out_label);
     this.getContentPane().add(fade_out_spinner);
 
     this.getContentPane().add(ok_button);
     this.getContentPane().add(cancel_button);
     //option_group = new JPanel();
-    op_stereo.setSelected(true);
-    op_16bit.setSelected(true);
+    if (prefs.getBoolean("wave_stereo",true)) {
+      op_stereo.setSelected(true);
+    } else {
+      op_mono.setSelected(true);
+    }
+    if (prefs.getBoolean("wave_16bit",true)) {
+      op_16bit.setSelected(true);
+    } else {
+      op_8bit.setSelected(true);
+    }
     this.setBounds(20,20,300,100);
   }
   JButton create_button(String text,String action) {  

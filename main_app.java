@@ -404,6 +404,10 @@ public class main_app implements Runnable,ActionListener {
               float fo = n.floatValue();
               boolean st = d.op_stereo.isSelected();
               boolean sh = d.op_16bit.isSelected();
+              prefs.putBoolean("wave_stereo",st);
+              prefs.putBoolean("wave_16bit",sh);
+              prefs.putDouble("wave_fade_in",fi);
+              prefs.putDouble("wave_fade_out",fo);
               main_app.wave_writer = new wave_writerc(filename,st,sh,fi,fo);
               main_app.wave_writer.write_song();
               main_app.wave_writer.close();
