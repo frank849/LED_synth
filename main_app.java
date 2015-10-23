@@ -85,6 +85,19 @@ public class main_app implements Runnable,ActionListener {
     }
     return (int) (f3+0.5);
   }
+  void add_random_melody() {
+    patternc p = main_app.song_player.pattern;
+    Random rand = new Random();
+    Rectangle r = main_panel_scroller.getViewport().getViewRect();
+    int y2 = r.y / sqsize;
+    int h = r.height / sqsize;
+    for (int x = 0;x < p.length;x++) {
+      int y = rand.nextInt(h)+y2;
+      int a = p.get_cell(x,y);
+      p.set_cell(x,y,a ^ pan_note);
+    }
+    main_frame.repaint();
+  }
   
   void display_song_length() {
     int total_length = 0;
@@ -260,6 +273,9 @@ public class main_app implements Runnable,ActionListener {
     }
     if (action.equals("add_random_patterns")) {
       add_random_patterns();
+    }
+    if (action.equals("add_random_melody")) {
+      add_random_melody();
     }
     if (action.equals("view_prime_table")) {
       if (prime_table_window == null) {
@@ -450,7 +466,7 @@ public class main_app implements Runnable,ActionListener {
   
   }
   static void update_status_bar() {
-    String str = "volume: " + pattern_player.volume;
+    String str = "volume: " + pattern_player.volume + "dB";
     //str = str + " bass: " + pattern_player.bass;
     //int o = num_octaves-octave_offset;
     str = str + " pan: "; 
@@ -1180,6 +1196,8 @@ public class main_app implements Runnable,ActionListener {
     createMenuItem("copy",pattern_menu,"menu_copy");
     createMenuItem("paste",pattern_menu,"menu_paste");
     createMenuItem("rename",pattern_menu,"menu_rename");
+    createMenuItem("add random melody",pattern_menu,"add_random_melody");
+
     mb.add(pattern_menu);
     JMenu song_menu = new JMenu("song");
     //createMenuItem("show equalizer",song_menu,"equalizer");
