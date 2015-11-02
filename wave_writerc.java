@@ -18,8 +18,10 @@ public class wave_writerc {
   double svol;
   int sample_rate;
   int wave_size;
+  long d_seed;
   wave_writerc(String outfile,boolean st,boolean sh,float fi,float fo) {
     try {
+      d_seed = System.currentTimeMillis();
       stereo = st;
       bits16 = sh;
       o = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(outfile,false)));
@@ -238,7 +240,20 @@ public class wave_writerc {
   static double clip(double a) {
     return pattern_playerc.clip(a);
   }
-  
+  int dither(double a) {
+    d_seed = (d_seed * 0x5DEECE66DL + 0xBL) & ((1L << 48) - 1);
+    double f = d_seed;
+    f = f / ((double) (1L << 48));
+    int i = (int) a;
+    double d = a-i;
+    if ((d > 0) & (f < d)) {
+      return i+1;
+    } 
+    if ((d < 0) & (f > d)) {
+      return i-1;
+    } 
+    return i;
+  }
   void write_song() {
     instrumentc ins = main_app.song_player.ins;
     int volume = main_app.pattern_player.volume;
