@@ -71,6 +71,7 @@ public class main_app implements Runnable,ActionListener {
   static prime_table_windowc prime_table_window = null;
   //static int harmonic_pos[] = new int[4];
   static create_temperament_dialog CT_dialog;
+  static Scale_Editor_Window scale_editor;
 
   static double get_centsf(float f) {
     return (((Math.log(f) / Math.log(2)) * 1200)+0.5);
@@ -285,6 +286,12 @@ public class main_app implements Runnable,ActionListener {
     }
     if (action.equals("view_tunning_table")) {
       tunning_table_window.show();
+    }
+    if (action.equals("create_tunning_table")) {
+      if (scale_editor == null) {
+        scale_editor = new Scale_Editor_Window();
+      }
+      scale_editor.show();
     }
     if (action.equals("create_temperament")) {
       create_temperament_dialog d = new create_temperament_dialog(main_frame,"create temperament");
@@ -1214,6 +1221,8 @@ public class main_app implements Runnable,ActionListener {
     createMenuItem("view tunning table",tunning_table_menu,"view_tunning_table");    
     //createMenuItem("generate mean tone",tunning_table_menu,"generate_mean_tone_scale");    
     createMenuItem("create temperament",tunning_table_menu,"create_temperament");
+    createMenuItem("create tunning table",tunning_table_menu,"create_tunning_table");    
+
     createMenuItem("import scala",tunning_table_menu,"import_scala");
     createMenuItem("export scala",tunning_table_menu,"export_scala");
     mb.add(tunning_table_menu);
