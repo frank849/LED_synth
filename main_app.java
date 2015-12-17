@@ -419,6 +419,7 @@ public class main_app implements Runnable,ActionListener {
             }
             export_wave_dialogc d = export_wave_dialog;            
             d.setVisible(true);
+            d.update_sample_rate_combo_box();
             if (d.ok_clicked) {
               Number n = null;
               n = (Number) d.fade_in_spinner.getValue();
@@ -431,7 +432,13 @@ public class main_app implements Runnable,ActionListener {
               prefs.putBoolean("wave_16bit",sh);
               prefs.putDouble("wave_fade_in",fi);
               prefs.putDouble("wave_fade_out",fo);
-              main_app.wave_writer = new wave_writerc(filename,st,sh,fi,fo);
+              int flags = 0;
+              if (st == true) {flags = flags | 1;}
+              if (sh == true) {flags = flags | 2;}
+              if (d.sample_rate_combo_box.getSelectedIndex() == 1) {
+                flags = flags | 4;
+              }
+              main_app.wave_writer = new wave_writerc(filename,flags,fi,fo);
               main_app.wave_writer.write_song();
               main_app.wave_writer.close();
             }
