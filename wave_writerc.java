@@ -19,11 +19,11 @@ public class wave_writerc {
   int sample_rate;
   int wave_size;
   long d_seed;
-  wave_writerc(String outfile,boolean st,boolean sh,float fi,float fo) {
+  wave_writerc(String outfile,int flags,float fi,float fo) {
     try {
       d_seed = System.currentTimeMillis();
-      stereo = st;
-      bits16 = sh;
+      stereo = (flags & 1) != 0;
+      bits16 = (flags & 2) != 0;
       o = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(outfile,false)));
       int sls = main_app.song_list.size();
       int songlen = 0;
@@ -32,6 +32,7 @@ public class wave_writerc {
          patternc p = (patternc) main_app.pattern_list.get(e.pattern);
          songlen = songlen + p.get_length();
       }
+      downsampling2 = (flags & 4) != 0;
       sampleplayerc.sample_rate = pattern_playerc.sample_rate;
       sample_rate = sampleplayerc.sample_rate;
       int l2 = pattern_playerc.get_note_length();
@@ -164,12 +165,15 @@ public class wave_writerc {
       } else {
         o.writeShort(swapbytesofword(1));
       }
-      o.writeInt(swapbytesofint(sample_rate));
+      int sample_rate2 = sample_rate;
+      if (downsampling2) {sample_rate2 = sample_rate2 >> 1;}
+
+      o.writeInt(swapbytesofint(sample_rate2));
       int b = 1;
       if (stereo == true) {b = b * 2;}
       if (bits16 == true) {b = b * 2;}
       
-      o.writeInt(swapbytesofint(sample_rate*b));
+      o.writeInt(swapbytesofint(sample_rate2*b));
       o.writeShort(swapbytesofword(b));
       if (bits16 == true){
         o.writeShort(swapbytesofword(16));
@@ -249,7 +253,7 @@ public class wave_writerc {
     if ((d > 0) & (f < d)) {
       return i+1;
     } 
-    if ((d < 0) & (f > d)) {
+    if ((d < 0) & (f < -d)) {
       return i-1;
     } 
     return i;
@@ -267,7 +271,9 @@ public class wave_writerc {
     float filter1 = 0.0f;
     float filter3 = 0.0f;
     int z = 0;
-    
+    half_band_filter ds_ft = new half_band_filter();
+    half_band_filter ds_ft2 = new half_band_filter();
+
     sp.play_pattern(n-1);
     sp.update_players();
     //for (int x = 0;x < sp.pattern.length;x++) {
@@ -302,8 +308,8 @@ public class wave_writerc {
             if (p.pan == 2) {p.play(buf2,bsize);}
             if (p.pan == 3) {p.play(buf3,bsize);}
           }
-          double v = (float) (Math.exp(Math.log(10.0)*(volume/20.0f)));
-          v = v * 0.001;
+          float v = (float) (Math.exp(Math.log(10.0)*(volume/20.0f)));
+          v = v * 0.001f;
           double v2 = 127.0;
           if (bits16 == true) {
             v2 = 32767.0;
@@ -315,40 +321,44 @@ public class wave_writerc {
             }
             equalizer.e1.filter(buf1,bsize);
             equalizer.e3.filter(buf3,bsize);
-            for (int i = 0;i < bsize;i++) {
-              int ws1 = ((int) (clip(buf1[i]*v) * v2));          
-              int ws2 = ((int) (clip(buf3[i]*v) * v2));          
-              write_stereo_sample(ws1,ws2);
+            if (downsampling2 == true) {
+              for (int i = 0;i < bsize;i++) {
+                double f1 = clip(ds_ft.filter(buf1[i]*v,i)) * v2;
+                double f2 = clip(ds_ft2.filter(buf3[i]*v,i)) * v2;
+                if ((i & 1) == 1) {
+                  write_stereo_sample(dither(f1),dither(f2));
+                }
+              }
+            } else {
+              for (int i = 0;i < bsize;i++) {
+                int ws1 = (dither(clip(buf1[i]*v) * v2));          
+                int ws2 = (dither(clip(buf3[i]*v) * v2));          
+                write_stereo_sample(ws1,ws2);
+              }
             }
           } else {
             for (int i = 0;i < bsize;i++) {
               buf2[i] = buf1[i] + buf2[i] + buf3[i];
             }
             equalizer.e2.filter(buf2,bsize);
-            for (int i = 0;i < bsize;i++) {
-              int ws = ((int) (clip(buf2[i]*v) * v2));          
-              write_mono_sample(ws);
+            if (downsampling2 == true) {
+              //System.out.println("downsampling2");
+              for (int i = 0;i < bsize;i++) {
+                double f = clip(ds_ft.filter(buf2[i]*v,i)) * v2;
+                if ((i & 1) == 1) {
+                  write_mono_sample(dither(f));
+                }
+              }
+            } else {
+              for (int i = 0;i < bsize;i++) {
+                int ws = (dither(clip(buf2[i]*v) * v2));          
+                write_mono_sample(ws);
+              }
             }
           }          
           z = z - bsize;
         }
       }
-    }
-  }
-  float filter_array[] = new float[8];
-  float downsample_filter(float in,int b) {
-    if ((b & 1) == 1) {
-      for (int i = 0;i < 6;i++) {
-        filter_array[i] = filter_array[i+2];
-      }
-      filter_array[6] = in;
-      float a = filter_array[3];
-      a = a - ((filter_array[0]+filter_array[6])*0.1f);
-      a = a + ((filter_array[2]+filter_array[4])*0.6f);
-      return a * 0.5f;
-    } else {
-      filter_array[7] = in;
-      return 0;
     }
   }
 
@@ -421,6 +431,24 @@ public class wave_writerc {
       written_out = written_out + 1;
     } catch (Exception e) {
       e.printStackTrace();      
+    }
+  }
+}
+class half_band_filter {
+  float filter_array[] = new float[8];
+  float filter(float in,int b) {
+    if ((b & 1) == 1) {
+      for (int i = 0;i < 6;i++) {
+        filter_array[i] = filter_array[i+2];
+      }
+      filter_array[6] = in;
+      float a = filter_array[3];
+      a = a - ((filter_array[0]+filter_array[6])*0.1f);
+      a = a + ((filter_array[2]+filter_array[4])*0.6f);
+      return a * 0.5f;
+    } else {
+      filter_array[7] = in;
+      return 0;
     }
   }
 }
