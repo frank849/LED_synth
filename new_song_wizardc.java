@@ -186,15 +186,16 @@ public class new_song_wizardc extends JDialog implements ActionListener {
   }
   int add_mos_sizes() {
     int a = generator % period;
-    int b = a;int n = 1;
-    if ((period-a) <= b) {b = period-a;}
+    int b = a;
+    int n = 1;
+    int b2 = period-a;
     number_of_tones_combo_box.addItem(new Integer(1));    
     for (int i = 2;i <= period;i++) {
       if (b == 0) {break;}
       if (i > 255) {break;}
       a = (a + generator) % period;
-      if ((period-a) <= b) {
-        b = period-a;n++;
+      if ((period-a) <= b2) {
+        b2 = period-a;n++;
         number_of_tones_combo_box.addItem(new Integer(i));    
       } 
       if (a <= b) {
