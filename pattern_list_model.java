@@ -20,7 +20,16 @@ public class pattern_list_model extends AbstractListModel {
   }
   static void add_pattern(patternc p) {
       //int i = get_sorted_index(p.name);
-      main_app.pattern_list.put(p.name,p);
+      if (main_app.pattern_list.containsKey(p.name)) {
+        int op = JOptionPane.showConfirmDialog(null,
+        "Do you want to overwrite " + p.name + "?","overwrite pattern?",
+        JOptionPane.YES_NO_OPTION,JOptionPane.QUESTION_MESSAGE);
+        if (op == JOptionPane.YES_OPTION) {
+          main_app.pattern_list.put(p.name,p);
+        }    
+      } else {
+        main_app.pattern_list.put(p.name,p);
+      }
       //update_pattern_list_ids();
   }
   static patternc create_new_pattern(Frame owner) {    
