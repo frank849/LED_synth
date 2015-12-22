@@ -11,11 +11,6 @@ import java.awt.*;
 import java.awt.event.*;                       
 import java.util.prefs.Preferences;
 
-//import java.awt.datatransfer.*;
-
-//import javax.imageio.*;
-//import java.awt.image.*;
-//import java.util.zip.*;
 
 
 class pattern_list_options_dialog extends JDialog implements ActionListener {
@@ -24,6 +19,7 @@ class pattern_list_options_dialog extends JDialog implements ActionListener {
   JPanel button_panel;
   JCheckBox pattern_check_box;
   JCheckBox tunning_check_box;
+  JCheckBox show_dialog_check_box;
   boolean result;
   static double key_step_size;
   String[] key_step_combobox_values = 
@@ -32,7 +28,7 @@ class pattern_list_options_dialog extends JDialog implements ActionListener {
   
   pattern_list_options_dialog(Frame owner) {
     super(owner,"pattern list options",true);
-    this.getContentPane().setLayout(new GridLayout(4,1));
+    this.getContentPane().setLayout(new GridLayout(5,1));
 
     prefs = pattern_list_table_modelc.prefs;
     boolean b;
@@ -45,6 +41,12 @@ class pattern_list_options_dialog extends JDialog implements ActionListener {
     this.getContentPane().add(tunning_check_box);
     b = pattern_list_table_modelc.new_tunnings;
     tunning_check_box.setSelected(b);
+
+    show_dialog_check_box = new JCheckBox("show dialog when adding patterns");
+    this.getContentPane().add(show_dialog_check_box);
+    b = pattern_list_windowc.show_dialog;
+    show_dialog_check_box.setSelected(b);
+
 
     key_step_panel = new JPanel();
     key_step_panel.setLayout(new GridLayout(1,2));    
@@ -86,7 +88,10 @@ class pattern_list_options_dialog extends JDialog implements ActionListener {
       b = tunning_check_box.isSelected();
       pattern_list_table_modelc.new_tunnings = b;
       prefs.putBoolean("new_tunnings",b);
-
+      b = show_dialog_check_box.isSelected();
+      pattern_list_windowc.show_dialog = b;
+      prefs.putBoolean("show_dialog",b);
+      
       //String s = (String) key_step_combobox.getSelectedItem();
       //prefs.put("key_step_value",s);
       //int i = key_step_combobox.getSelectedIndex();
@@ -295,7 +300,6 @@ class pattern_list_table_modelc extends  AbstractTableModel {
     return main_app.song_list.size();
   }
   public Object getValueAt(int row, int col) { 
-    //col = column_table[col];
     song_list_entryc e = (song_list_entryc) main_app.song_list.get(row); 
     if (col == 0) {return e.pattern;}
     if (col == 1) {return new Integer(e.mode);}
@@ -308,13 +312,9 @@ class pattern_list_table_modelc extends  AbstractTableModel {
     return null;
   }
   public boolean isCellEditable(int rowIndex,int columnIndex) {
-    //if (columnIndex == 0) {return true;}
-    //if (columnIndex == 1) {return true;}
-    //if (columnIndex == 2) {return true;}
     return true;
   }
   public void setValueAt(Object val,int row,int col) {
-    //col = column_table[col];
     String str = (String) val;
     song_list_entryc e = (song_list_entryc) main_app.song_list.get(row);
     song_playerc song_player = main_app.song_player;
@@ -368,6 +368,9 @@ class pattern_list_table_modelc extends  AbstractTableModel {
 
 public class pattern_list_windowc extends JFrame implements ActionListener,ListSelectionListener,ChangeListener {
   //JList listbox;
+  static Preferences prefs = main_app.prefs.node("pattern_list_options");
+  static boolean show_dialog = prefs.getBoolean("show_dialog",true);
+
   JTable table;
   JPanel button_panel;
   JScrollPane listboxscroller;
@@ -381,6 +384,8 @@ public class pattern_list_windowc extends JFrame implements ActionListener,ListS
   JButton button2;
   JButton button3;
   JButton button4;
+  JButton button5;
+  JButton button6;
   JMenuBar main_menu_bar;
   //pattern_list_model list;  
   pattern_list_column_modelc pl_column_model;
@@ -410,7 +415,7 @@ public class pattern_list_windowc extends JFrame implements ActionListener,ListS
     button_panel = new JPanel();
     this.getContentPane().add(button_panel,BorderLayout.SOUTH);    
     
-    button_panel.setLayout(new GridLayout(4,2));
+    button_panel.setLayout(new GridLayout(5,2));
     
     mode_spinner_label = new JLabel("mode:");
     mode_spinner = new JSpinner(new SpinnerNumberModel(0, -128, 127, 1));
@@ -432,17 +437,15 @@ public class pattern_list_windowc extends JFrame implements ActionListener,ListS
     button_panel.add(key_spinner_label);
     button_panel.add(key_spinner);
 
-    button1 = create_button("add","add_pattern");
-    button2 = create_button("remove","remove_pattern");
     button3 = create_button("up","move_up");
     button4 = create_button("down","move_down");
+    button5 = create_button("copy","copy_pattern");
+    button6 = create_button("paste","paste_pattern");
+    button1 = create_button("add","add_pattern");
+    button2 = create_button("remove","remove_pattern");
 
     main_menu_bar = setup_menu();
     this.setJMenuBar(main_menu_bar);    
-    //create_button("new pattern","new_pattern");
-    //button_panel.add(button2);
-    //button_panel.add(button3);
-    //button_panel.add(button4);
     update_list_box();
   }
   JMenuItem createMenuItem(String text,JMenu menu,String action) {
@@ -454,11 +457,17 @@ public class pattern_list_windowc extends JFrame implements ActionListener,ListS
   }
   JMenuBar setup_menu() {
     JMenuBar mb = new JMenuBar();
-    JMenu song_menu = new JMenu("song");
+    JMenu pattern_menu = new JMenu("pattern");
+    createMenuItem("new",pattern_menu,"new_pattern");
+    createMenuItem("rename",pattern_menu,"rename_pattern");
+    createMenuItem("add",pattern_menu,"add_pattern");
+    createMenuItem("remove",pattern_menu,"remove_pattern");
+    createMenuItem("copy",pattern_menu,"copy_pattern");
+    createMenuItem("paste",pattern_menu,"paste_pattern");
+    mb.add(pattern_menu);
+
+    JMenu song_menu = new JMenu("list");
     createMenuItem("visible columns",song_menu,"visible_columns");
-    createMenuItem("new pattern",song_menu,"new_pattern");
-    createMenuItem("add pattern",song_menu,"add_pattern");
-    createMenuItem("remove pattern",song_menu,"remove_pattern");
     createMenuItem("options",song_menu,"options");
 
 
@@ -471,7 +480,6 @@ public class pattern_list_windowc extends JFrame implements ActionListener,ListS
     song_playerc song_player = main_app.song_player;
     song_list_entryc en = (song_list_entryc) main_app.song_list.get(index);
     if (e.getSource() == mode_spinner) {
-      //System.out.println("key stateChanged");
       Number n = (Number) mode_spinner.getValue();
       en.mode = n.intValue();
       song_player.pattern_mode = en.mode;
@@ -479,7 +487,6 @@ public class pattern_list_windowc extends JFrame implements ActionListener,ListS
       song_player.update_players();
     }
     if (e.getSource() == key_spinner) {
-      //System.out.println("cents stateChanged");
       Number n = (Number) key_spinner.getValue();
       en.cents = scalec.key_to_cents(n.doubleValue());
       song_player.base_freq = Math.exp(Math.log(2) * (en.cents / (1200.0*65536.0)));    
@@ -558,12 +565,24 @@ public class pattern_list_windowc extends JFrame implements ActionListener,ListS
   public void actionPerformed(ActionEvent e) {        
     String action = e.getActionCommand();
     //System.out.println(action);
-    //if (action.equals("new_pattern")) {
-    //  patternc p = pattern_list_model.create_new_pattern(this);
-    //  if (p != null) {
-    //    add_to_song_list(p);
-    //  }
-    //}
+    patternc pattern = main_app.song_player.pattern;
+
+    if (action.equals("new_pattern")) {
+      patternc p = pattern_list_model.create_new_pattern(this);
+      if (p != null) {
+        add_to_song_list(p.name);
+      }
+    }
+    if (action.equals("rename_pattern")) {
+      String msg = "enter a new name for the pattern";
+      String new_string = JOptionPane.showInputDialog(this,msg,pattern.name);
+      if (new_string != null) {
+        update_pattern_name(new_string);
+        pattern.name = new_string;
+      }
+      
+    }
+
     if (action.equals("options")) {
       Number n;
       pattern_list_options_dialog d = new pattern_list_options_dialog(this);
@@ -603,15 +622,33 @@ public class pattern_list_windowc extends JFrame implements ActionListener,ListS
         table.updateUI();
       }
     }
+    if (action.equals("copy_pattern")) {
+      String str = pattern.write_to_string();
+      main_app.TextTransfer.setClipboardContents(str);
+    }
+    if (action.equals("paste_pattern")) {
+      String str = main_app.TextTransfer.getClipboardContents();
+      patternc p = patternc.read_pattern_from_string(str);
+      if (p != null) {
+        pattern_list_model.add_pattern(p);
+        add_to_song_list(p.name);
+        pattern = p;
+      }
+    }
+
     if (action.equals("add_pattern")) {
-      pattern_list_dialog d = new pattern_list_dialog(this,"add pattern");
+      if (show_dialog == true) { 
+        pattern_list_dialog d = new pattern_list_dialog(this,"add pattern");
       //d.listbox.setSelectedIndex(main_app.pattern.id);
-      d.select_pattern(main_app.song_player.pattern.name);
-      d.show();
-      if (d.OK_Clicked()) {
-        String p = d.get_selected_pattern();
-        add_to_song_list(p);
+        d.select_pattern(main_app.song_player.pattern.name);
+        d.show();
+        if (d.OK_Clicked()) {
+          String p = d.get_selected_pattern();
+          add_to_song_list(p);
         //add_to_song_list(main_app.pattern.name);
+        }
+      } else {
+        add_to_song_list(pattern.name);
       }
     }
     if (action.equals("remove_pattern")) {
