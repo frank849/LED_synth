@@ -72,19 +72,42 @@ public class song_playerc {
     }
   }
   void update_players() {
+    System.out.println("update_players");
     int npo = main_app.notes_per_octave;
     //int n = npo * main_app.num_octaves;
     int n = main_app.number_of_keys;
-    for (int i = 0;i < player_array.size();i++) {
-      sampleplayerc p = (sampleplayerc) player_array.get(i);
+    for (int y = 0;y < player_array.size();y++) {
+      sampleplayerc p = (sampleplayerc) player_array.get(y);
       //double f = ((double)(n-i))/npo;
       //p.freq = Math.exp(Math.log(2) * f) * main_app.base_freq;
-      p.freq = get_note_freq(n-i);
-      p.vol = 0.01; // Math.sqrt(Math.sqrt(Math.sqrt(p.freq/200)));
-      p.fw = get_filter_width(p.freq);
-      p.t = get_string_table(p.freq);
+      //if (pattern.get_cell(x,y) != 0) {
+        p.freq = get_note_freq(n-y);
+        p.vol = 0.01; // Math.sqrt(Math.sqrt(Math.sqrt(p.freq/200)));
+        p.fw = get_filter_width(p.freq);
+        p.t = get_string_table(p.freq);
+      //}
     }
   }
+  public void play_col(int x,int bsize) {
+    int n = main_app.number_of_keys;
+    for (int y = 0;y < player_array.size();y++) {
+      sampleplayerc p = (sampleplayerc) player_array.get(y);
+      int a = pattern.get_cell(x,y);
+      if (a != 0) { 
+          if (p.playing == false) {
+            p.note_on(bsize);          
+          }
+          p.pan = a;
+          p.freq = get_note_freq(n-y);
+          p.vol = 0.01; // Math.sqrt(Math.sqrt(Math.sqrt(p.freq/200)));
+          p.fw = get_filter_width(p.freq);
+          p.t = get_string_table(p.freq);
+      } else {
+          p.note_off(bsize);
+      }
+    }
+  }
+
   float get_filter_width(double freq) {
     double o = (Math.log(highest_note_freq/freq)/Math.log(2.0));    
     int i = (int) o;
