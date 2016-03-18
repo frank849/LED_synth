@@ -114,46 +114,11 @@ public class main_app implements Runnable,ActionListener {
     int seconds = (((int) f ) % 60);
     JOptionPane.showMessageDialog(main_frame,"this song is " + minutes + " minutes and " + seconds + " seconds  long","info",JOptionPane.INFORMATION_MESSAGE);
   }
+
   void add_random_patterns() {
-    String msg = "how many patterns to add?";
-    String number_string = JOptionPane.showInputDialog(main_frame,msg,"10");
-    if (number_string == null) {return;}
-    Random rand = new Random();
-    try {
-      int n = Integer.parseInt(number_string);
-      Set s = pattern_list.keySet(); 
-      Object pnames[] = s.toArray();
-      int psize = s.size();
+    add_random_patterns_dialog d = new add_random_patterns_dialog(main_frame);
+    d.setVisible(true);    
 
-      s = tuning_map.keySet(); 
-      Object tnames[] = s.toArray();
-      int tsize = s.size();
-
-      int os = song_player.scale.interval_size;
-      for (int i = 0;i < n;i++) {
-        String pname = (String) pnames[rand.nextInt(psize)];
-        String tname = (String) tnames[rand.nextInt(tsize)];
-        int m = rand.nextInt(notes_per_octave); 
-        m = m - (notes_per_octave >> 1);
-        int c = (-m * os) / notes_per_octave;
-        c = c + rand.nextInt(os) - (os >> 1);
-        double k = scalec.cents_to_key(c);
-        k = Math.rint(k);
-        c = scalec.key_to_cents(k);
-        //k = k + rand.nextInt(1200)-600;
-        //int ed = scalec.equal_divisions;
-        //int d = rand.nextInt(ed) - (ed >> 1);
-        //d = d - (notes_per_octave >> 1);
-        //k  = k + scalec.key_to_cents(d);
-        song_list.add(new song_list_entryc(pname,m,c,tname));
-      }
-    } catch (java.lang.NumberFormatException e) {
-      JOptionPane.showMessageDialog(main_frame,
-      "invalid number","error",
-      JOptionPane.ERROR_MESSAGE);
-    }
-    pattern_list_window.update_list_box();
-    //pattern_list_window.update_list_box();
   }
   public void actionPerformed(ActionEvent e) {        
     String action = e.getActionCommand();
