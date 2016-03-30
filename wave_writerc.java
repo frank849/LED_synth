@@ -277,7 +277,7 @@ public class wave_writerc {
     sp.play_pattern(n-1);
     sp.update_players();
     //for (int x = 0;x < sp.pattern.length;x++) {
-      pattern_playerc.play_col(sp,sp.pattern.length-1,bsize);
+      sp.play_col(sp.pattern.length-1,bsize);
       int nl = pattern_playerc.get_note_length();
       z = z + nl;
       while (z >= bsize) {
@@ -291,9 +291,9 @@ public class wave_writerc {
     //}
     for (int t = 0;t < n;t++) {
       sp.play_pattern(t);
-      sp.update_players();
+      //sp.update_players();
       for (int x = 0;x < sp.pattern.length;x++) {
-        pattern_playerc.play_col(sp,x,bsize);
+        sp.play_col(x,bsize);
         nl = pattern_playerc.get_note_length();
         z = z + nl;
         while (z >= bsize) {

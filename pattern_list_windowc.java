@@ -484,13 +484,13 @@ public class pattern_list_windowc extends JFrame implements ActionListener,ListS
       en.mode = n.intValue();
       song_player.pattern_mode = en.mode;
       main_app.tunning_table_window.update_scale();
-      song_player.update_players();
+      //song_player.update_players();
     }
     if (e.getSource() == key_spinner) {
       Number n = (Number) key_spinner.getValue();
       en.cents = scalec.key_to_cents(n.doubleValue());
       song_player.base_freq = Math.exp(Math.log(2) * (en.cents / (1200.0*65536.0)));    
-      song_player.update_players();
+      //song_player.update_players();
     }
     main_app.main_panel.repaint();
     //table.updateUI();
@@ -716,7 +716,7 @@ public class pattern_list_windowc extends JFrame implements ActionListener,ListS
         key_spinner.setValue(new Double(key));
         main_app.main_panel.update_size();
 	main_app.main_panel.repaint();
-        main_app.song_player.update_players();
+        //main_app.song_player.update_players();
         main_app.update_status_bar();
 
       }
