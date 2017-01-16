@@ -70,22 +70,6 @@ public class pattern_playerc extends Thread {
     //nl = nl - (nl & 15);
     return nl;
   }
-  static public void play_col(song_playerc sp,int x,int bsize) {
-    //int n = main_app.notes_per_octave;
-    //n = n * main_app.num_octaves;
-    for (int y = 0;y < sp.player_array.size();y++) {
-      sampleplayerc p = (sampleplayerc) sp.player_array.get(y);
-      int a = sp.pattern.get_cell(x,y);
-      if (a != 0) { 
-          if (p.playing == false) {
-            p.note_on(bsize);
-          }
-          p.pan = a;
-      } else {
-          p.note_off(bsize);
-      }
-    }
-  }
   public void run() {
     int bsize = 128;
     //int bsize2 = bsize;
@@ -110,7 +94,7 @@ public class pattern_playerc extends Thread {
       x = pos;
       //System.out.println("am: " + am435);
       //am435 = 0;
-      play_col(song_player,pos,bsize);
+      song_player.play_col(pos,bsize);
       //for (int i2 = 0;i2 <= (nl / bsize);i2++) {
       //System.out.println(" play_col " + pos);
       i2 = i2 + nl;

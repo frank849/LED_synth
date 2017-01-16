@@ -13,6 +13,8 @@ import java.awt.datatransfer.*;
 import javax.imageio.*;
 import java.awt.image.*;
 import java.util.zip.*;
+import java.util.prefs.Preferences;
+
 
 public class new_song_wizardc extends JDialog implements ActionListener {
   //JLabel number_of_tones_label;
@@ -57,9 +59,13 @@ public class new_song_wizardc extends JDialog implements ActionListener {
   String[] interval_strings = {"2/1","3/1","4/1"};
   double numerator;
   double denominator;
+  Preferences prefs;
+
   new_song_wizardc(Frame owner,String title) {
     super(owner,title,true);
     setBounds(20,20,200,200);
+
+    prefs = main_app.prefs;
     previous = new Stack();
     backButton = create_button("back","back");
     nextButton = create_button("next","next");
@@ -84,22 +90,39 @@ public class new_song_wizardc extends JDialog implements ActionListener {
     range_panel = new JPanel();
     range_panel.setLayout(new GridLayout(3,2));
     black_notes_spinner = create_spinner(range_panel,"black notes",new SpinnerNumberModel(0,0,1,1));
-    highest_freq_spinner = create_spinner(range_panel,"highest freq",new SpinnerNumberModel(16000,1000,96000,1000));
-    base_freq_spinner = create_spinner(range_panel,"lowest freq",new SpinnerNumberModel(16,1,96,1));
+    int highest = prefs.getInt("highest_freq",16000);
+    int lowest = prefs.getInt("lowest_freq",16);
+
+    highest_freq_spinner = create_spinner(range_panel,"highest freq",new SpinnerNumberModel(highest,1000,96000,1000));
+    base_freq_spinner = create_spinner(range_panel,"lowest freq",new SpinnerNumberModel(lowest,1,96,1));
 
 
 
     interval_panel = new JPanel();
     interval_panel.setLayout(new GridLayout(3,2));
-    equal_divisions_spinner = create_spinner(interval_panel,"equal_divisions",new SpinnerNumberModel(12,1,32000,1));
+    int ed = prefs.getInt("equal_divisions",12);
+    equal_divisions_spinner = create_spinner(interval_panel,"equal_divisions",new SpinnerNumberModel(ed,1,32000,1));
 
     interval_panel.add(new JLabel("interval:"));
-    double cents = scalec.interval_size;
-    cents = cents / 65536.0;
+//    double cents = scalec.interval_size;
+//    cents = cents / 65536.0;
 //new_song_dialogc.find_closest_interval(cents)
     interval_combo_box = new JComboBox(interval_strings);
-    interval_combo_box.setSelectedIndex(0);
     interval_combo_box.setEditable(true);
+    int i = prefs.getInt("interval_combo_box_index",0);
+    if (i == -1) {
+      ComboBoxEditor int_ed = interval_combo_box.getEditor();
+      String int_str = prefs.get("interval_str","2/1");
+      int_ed.setItem(int_str);
+      System.out.println(int_str);
+    } else {
+      interval_combo_box.setSelectedIndex(i);
+    }
+
+    //numerator = prefs.getDouble("numerator",2);
+    //denominator = prefs.getDouble("denominator",1);
+    //String int_str = numerator + "/" + denominator;
+
     interval_panel.add(interval_combo_box);
 
 
@@ -118,7 +141,9 @@ public class new_song_wizardc extends JDialog implements ActionListener {
     //number_of_tones_combo_box.addActionListener(this);
     name_label = new JLabel("name of first pattern:");
     mos_panel.add(name_label);
-    name_field = new JTextField("pattern");
+
+    String fp_name = prefs.get("first_pattern_name","pattern");
+    name_field = new JTextField(fp_name);
     mos_panel.add(name_field);
     
     //mos_panel.add(new JLabel("black notes"));
@@ -161,15 +186,16 @@ public class new_song_wizardc extends JDialog implements ActionListener {
   }
   int add_mos_sizes() {
     int a = generator % period;
-    int b = a;int n = 1;
-    if ((period-a) <= b) {b = period-a;}
+    int b = a;
+    int n = 1;
+    int b2 = period-a;
     number_of_tones_combo_box.addItem(new Integer(1));    
     for (int i = 2;i <= period;i++) {
       if (b == 0) {break;}
       if (i > 255) {break;}
       a = (a + generator) % period;
-      if ((period-a) <= b) {
-        b = period-a;n++;
+      if ((period-a) <= b2) {
+        b2 = period-a;n++;
         number_of_tones_combo_box.addItem(new Integer(i));    
       } 
       if (a <= b) {
@@ -192,8 +218,6 @@ public class new_song_wizardc extends JDialog implements ActionListener {
     } catch (NumberFormatException e) {
       return false;
     }
-    double cents = (Math.log(n/d)*1200.0) / Math.log(2);
-    scalec.interval_size = (int) (cents*65536.0);
     numerator = n;
     denominator = d;
     return true;
@@ -236,16 +260,26 @@ public class new_song_wizardc extends JDialog implements ActionListener {
         if (parse_interval(Int_String) == true) {
           current_panel = generator_panel;        
           n = (Number) equal_divisions_spinner.getValue();
-          period_spinner.setValue(n);
-          equal_divisions = n.intValue();         
-          double g = equal_divisions;
-          double f0 = numerator / denominator;
-          double f1 = (numerator+1.0) / (denominator+1.0);
+          if (equal_divisions != n.intValue()) {
+            equal_divisions = n.intValue();         
+            period_spinner.setValue(n);
+            double g = equal_divisions;
+            double f0 = numerator / denominator;
+            double f1 = (numerator+1.0) / (denominator+1.0);
 
-          g = (g * Math.log(f1)) / Math.log(f0);
-          int gen = (int) (g + 0.5);
-          gen = gen / gcd(equal_divisions,gen);
-          generator_spinner.setValue(new Integer(gen));
+            g = (g * Math.log(f1)) / Math.log(f0);
+            int gen = (int) (g + 0.5);
+            gen = gen / gcd(equal_divisions,gen);
+            int ed = prefs.getInt("equal_divisions",12);
+            if (ed == equal_divisions) { 
+              gen = prefs.getInt("generator",gen);
+              int period = prefs.getInt("period",ed);
+              period_spinner.setValue(new Integer(period));
+            } //else {
+            //  prefs.putInt("equal_divisions",equal_divisions);
+            //}
+            generator_spinner.setValue(new Integer(gen));
+          }
         } else {
           JOptionPane.showMessageDialog(this,
             Int_String + " is invalid","error",
@@ -255,12 +289,24 @@ public class new_song_wizardc extends JDialog implements ActionListener {
       }
       if (current_index == 1) {
         n = (Number) generator_spinner.getValue();
-        generator = n.intValue();
+        int g = n.intValue();
         n = (Number) period_spinner.getValue();
-        period = n.intValue();
-        number_of_tones_combo_box.removeAllItems();
-        int ns = add_mos_sizes();
-        number_of_tones_combo_box.setSelectedIndex(ns-1);
+        int p = n.intValue();
+        if ((generator != g) | (period != p)) { 
+          generator = g;
+          period = p;
+          number_of_tones_combo_box.removeAllItems();
+          int ns = add_mos_sizes();
+          number_of_tones_combo_box.setSelectedIndex(ns-1);
+          generator = prefs.getInt("generator",g);
+          period = prefs.getInt("period",p);
+          if ((generator == g) & (period == p)) {
+            int i = prefs.getInt("number_of_tones_index",ns-1);
+            number_of_tones_combo_box.setSelectedIndex(i);
+          }
+          generator = g;
+          period = p;
+        }
         current_panel = mos_panel;
       }
       if (current_index == 2) {
@@ -268,17 +314,24 @@ public class new_song_wizardc extends JDialog implements ActionListener {
         
         n = (Number) number_of_tones_combo_box.getItemAt(i);
         int i1 = n.intValue();
+        int bn = 0;
         if (i > 0) {
           n = (Number) number_of_tones_combo_box.getItemAt(i-1);
           int i2 = n.intValue();
           if (i2 > (i1 / 2)) {
-            black_notes_spinner.setValue(i1-i2);
+            bn = i1-i2;
           } else {
-            black_notes_spinner.setValue(i2);
+            bn = i2;
           }
-        } else {
-          black_notes_spinner.setValue(0);
         }
+        int g = prefs.getInt("generator",-1);
+        int p = prefs.getInt("period",-1);
+        int i3 = prefs.getInt("number_of_tones_index",-1);
+        if ((g == generator) & (p == period) & (i3 == i)) {
+           bn = prefs.getInt("black_notes_per_octave",bn);
+        }  
+        black_notes_spinner.setValue(bn);
+                
         SpinnerNumberModel m = (SpinnerNumberModel) black_notes_spinner.getModel();
         m.setMaximum(new Integer(i1));
         current_panel = range_panel;
@@ -287,26 +340,48 @@ public class new_song_wizardc extends JDialog implements ActionListener {
       if (current_index == 3) {
         n = (Number) number_of_tones_combo_box.getSelectedItem();
         main_app.notes_per_octave = n.intValue();
+        prefs.putInt("notes_per_octave",n.intValue());
+        int i = number_of_tones_combo_box.getSelectedIndex();      
+        prefs.putInt("number_of_tones_index",i);
         scalec.period = period;
+        prefs.putInt("period",period);
         scalec.generator = generator;
+        prefs.putInt("generator",generator);
         scalec.equal_divisions = equal_divisions;
+        prefs.putInt("equal_divisions",equal_divisions);
+        i = interval_combo_box.getSelectedIndex();
+        prefs.putInt("interval_combo_box_index",i);
+        String Int_String = (String) interval_combo_box.getSelectedItem();
+        prefs.put("interval_str",Int_String);
+
+        double cents = (Math.log(numerator/denominator)*1200.0) / Math.log(2);
+        scalec.interval_size = (int) (cents*65536.0);
+        prefs.putInt("scalec_interval_size",scalec.interval_size); 
         n = (Number) base_freq_spinner.getValue();
         main_app.base_freq = n.intValue();
-        double lowest = main_app.base_freq;
+        int lowest = main_app.base_freq;
         n = (Number) highest_freq_spinner.getValue();
-        double highest = n.intValue();
+        int highest = n.intValue();
         //double number_of_keys = Math.log(highest/lowest) / Math.log(n/d);
         //main_app.num_octaves = (int) (number_of_keys+1.0);
         //number_of_keys = number_of_keys * main_app.notes_per_octave;
         //main_app.number_of_keys = (int) number_of_keys;
+        prefs.putInt("lowest_freq",lowest);
+        prefs.putInt("highest_freq",highest);
         int nk = scalec.get_num_total_key_notes_in_range(lowest,highest);
         main_app.number_of_keys = nk;
+        prefs.putInt("number_of_keys",main_app.number_of_keys);
 
         n = (Number) black_notes_spinner.getValue();
         patternc.black_notes_per_octave = n.intValue();
+        prefs.putInt("black_notes_per_octave",n.intValue());
+
 
         main_app.pattern_player.paused = true;
-        main_app.new_song(main_app.notes_per_octave,name_field.getText()); 
+        prefs.put("first_pattern_name",name_field.getText());
+
+        main_app.new_song();
+        //main_app.new_song(main_app.notes_per_octave,name_field.getText()); 
         main_app.song_player.create_players();
     
         main_app.pattern_list_window.update_list_box();

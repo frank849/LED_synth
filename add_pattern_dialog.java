@@ -19,13 +19,15 @@ public class add_pattern_dialog extends JDialog implements ActionListener{
   //JButton cancel_button;  
   boolean result;
   int pat_len;
+  long id;
   add_pattern_dialog(Frame owner,String title,int pat_len) {
     super(owner,title,true);
     setBounds(20,20,200,200);
     this.getContentPane().setLayout(new GridLayout(5,2));
     name_label = new JLabel("name:");
     this.getContentPane().add(name_label);
-    name_field = new JTextField("pattern");
+    id = main_app.prefs.getLong("pattern_id",0);
+    name_field = new JTextField("pattern" + id);
     this.getContentPane().add(name_field);
     
     start_label = new JLabel("start:");
@@ -78,6 +80,7 @@ public class add_pattern_dialog extends JDialog implements ActionListener{
     }
     if (action.equals("ok")) {
       result = true;
+      main_app.prefs.putLong("pattern_id",id+1);
       hide();
     }
     if (action.equals("cancel")) {

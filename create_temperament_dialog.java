@@ -48,13 +48,13 @@ public class create_temperament_dialog extends JDialog implements ActionListener
     create_button("cancel","cancel");
 
   }
-  double get_offset() {
+  float get_offset() {
     Number n = (Number) offset_spinner.getValue();
-    return n.doubleValue();
+    return n.floatValue();
   }
-  double get_generator() {
+  float get_generator() {
     Number n = (Number) generator_spinner.getValue();
-    return n.doubleValue();
+    return n.floatValue();
   }
   boolean OK_Clicked() {
     return result;
