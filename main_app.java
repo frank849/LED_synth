@@ -630,10 +630,7 @@ public class main_app implements Runnable,ActionListener {
           pattern_playerc.sample_rate = sample_rate;
         }      
       }
-      equalizer e2 = equalizer.e2;
-      e2.read(infile,version);
-      equalizer.e1.copy(e2);
-      equalizer.e3.copy(e2);              
+      equalizer.skip(infile);
       infile.readShort();
       if (version >= 8) {
         infile.readByte();

@@ -1,4 +1,5 @@
 import java.io.*;
+import java.util.prefs.Preferences;
 
 class EQ_filter {
   private float real;
@@ -16,10 +17,14 @@ class EQ_filter {
   String name;
   EQ_filter(String name,int f,int fs,int bw,int bw_s) {
     this.name = name;
-    this.freq = f;
+    Preferences pref = main_app.prefs.node("parametric_equalizer");
+
+    this.freq = pref.getInt(name + "_freq",f);
     this.freq_step = fs;
-    this.band_width = bw;
+    this.band_width =  pref.getInt(name + "_bandwidth",bw);
     this.band_width_step = bw_s;
+    this.db =  pref.getInt(name + "_db",0);
+    
   }
   EQ_filter() {
     cos45 = 1.0f;
@@ -33,6 +38,14 @@ class EQ_filter {
     set_bandwidth_step(e.get_bandwidth_step());
     set_DB(e.get_DB());
 
+  }
+  static void skip(DataInputStream infile) throws IOException {
+    infile.readUTF();
+    infile.readUnsignedShort();
+    infile.readUnsignedShort();
+    infile.readUnsignedShort();
+    infile.readUnsignedShort();
+    infile.readByte();
   }
   void read(DataInputStream infile,int version) throws IOException {
     name = infile.readUTF();
@@ -136,6 +149,14 @@ public class equalizer {
     }
   }
 
+  static void skip(DataInputStream infile) throws IOException {
+    infile.readByte();
+    infile.readByte();
+    int n = infile.readUnsignedShort();
+    for (int i = 0;i < n;i++) {
+      EQ_filter.skip(infile);
+    }
+  }
   void read(DataInputStream infile,int version) throws IOException {
     DB_min = infile.readByte();
     DB_max = infile.readByte();
