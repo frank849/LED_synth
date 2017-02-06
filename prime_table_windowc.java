@@ -74,9 +74,15 @@ class prime_table_modelc extends  AbstractTableModel {
       float f = Float.parseFloat(str);
       main_app.prime_list.prime_factor_bw[row] = f;
     }
+    float f1 = Float.parseFloat(str);
+    double f2 = scalec.get_interval_fraction();
     if (col == 3) {
-      float f1 = Float.parseFloat(str);
-      double f2 = scalec.get_interval_fraction();
+      song_playerc sp = main_app.song_player;
+      int s = sp.scale.size;
+      float f3 = (float) Math.exp(Math.log(f2)*(f1/s));
+      main_app.prime_list.prime_factor[row] = f3;
+    }
+    if (col == 4) {
       int ed = scalec.equal_divisions;
       float f3 = (float) Math.exp(Math.log(f2)*(f1/ed));
       main_app.prime_list.prime_factor[row] = f3;
