@@ -241,30 +241,42 @@ class pattern_list_column_modelc extends DefaultTableColumnModel {
   static int max_columns = 4;
   public int column_table[];
   TableColumn t[];
+  static Preferences prefs = main_app.prefs.node("pattern_list_options");
   pattern_list_column_modelc() {
     super();
     t = new TableColumn[max_columns];
     column_table = new int[max_columns];
+    int j = 0;
+    long bits = prefs.getLong("visible_column_bits",-1);
     for (int i = 0;i < max_columns;i++) {
       int size = 100;
       if (i == 0) {size = 300;}
       t[i] = new TableColumn(i,size);
       String s = getColumnName(i);
       t[i].setHeaderValue(s);
-      addColumn(t[i]);
-      column_table[i] = i;
+      boolean b = true; 
+      if (((bits >> i) & 1) == 0) {b = false;}
+      if (b) {     
+        addColumn(t[i]);
+        column_table[j] = i;
+        j = j + 1;
+      }
     }
+    num_visible_columns = j;
   }
   int get_num_visible_columns() {
     return num_visible_columns;
   }
   void set_num_visible_columns(int c) {
+    long bits = 0;
     for (int i = 0;i < max_columns;i++) {
       removeColumn(t[i]);
     }
     for (int i = 0;i < c;i++) {
       addColumn(t[column_table[i]]);
+      bits = bits | (1 << column_table[i]);
     }
+    prefs.putLong("visible_column_bits",bits);
     num_visible_columns = c;
   }
   public TableColumn getColumn(int columnIndex) {
